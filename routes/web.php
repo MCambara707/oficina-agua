@@ -45,21 +45,45 @@ Route::middleware('auth')->group(function () {
     Route::post('/logout', [AutenticacionController::class, 'cerrarSesion'])
         ->name('logout');
 
-    // Panel temporal de AdminLTE.
+    /*
+    |--------------------------------------------------------------------------
+    | Panel general
+    |--------------------------------------------------------------------------
+    */
+
+    // Disponible para cualquier usuario autenticado.
     Route::get('/admin-demo', function () {
         return view('admin-demo');
     })->name('admin.demo');
 
-    // Gestión de clientes.
-    Route::resource('clientes', ClienteController::class)
-        ->except('show');
+    /*
+    |--------------------------------------------------------------------------
+    | Administrador y Secretaria
+    |--------------------------------------------------------------------------
+    */
 
-    // Gestión de tarifas.
-    Route::resource('tarifas', TarifaController::class)
-        ->except('show');
+    Route::middleware('rol:Administrador,Secretaria')->group(function () {
 
-    // Gestión de contadores.
-    Route::resource('contadores', ContadorController::class)
-        ->parameters(['contadores' => 'contador'])
-        ->except('show');
+        // Gestión de clientes.
+        Route::resource('clientes', ClienteController::class)
+            ->except('show');
+
+        // Gestión de contadores.
+        Route::resource('contadores', ContadorController::class)
+            ->parameters(['contadores' => 'contador'])
+            ->except('show');
+    });
+
+    /*
+    |--------------------------------------------------------------------------
+    | Solo Administrador
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware('rol:Administrador')->group(function () {
+
+        // Gestión de tarifas.
+        Route::resource('tarifas', TarifaController::class)
+            ->except('show');
+    });
 });
