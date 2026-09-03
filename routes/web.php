@@ -5,6 +5,7 @@ use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\TarifaController;
 use App\Http\Controllers\ContadorController;
 use App\Http\Controllers\AutenticacionController;
+use App\Http\Controllers\LecturaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -62,7 +63,7 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware('rol:Administrador,Secretaria')->group(function () {
+    Route::middleware('rol:Administrador,Secretaria,Lector')->group(function () {
 
         // Gestión de clientes.
         Route::resource('clientes', ClienteController::class)
@@ -72,6 +73,10 @@ Route::middleware('auth')->group(function () {
         Route::resource('contadores', ContadorController::class)
             ->parameters(['contadores' => 'contador'])
             ->except('show');
+
+        // Registro y consulta de lecturas.
+        Route::resource('lecturas', LecturaController::class)
+            ->only(['index', 'create', 'store']);
     });
 
     /*
