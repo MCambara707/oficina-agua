@@ -247,6 +247,12 @@ return [
             'url'  => 'tarifas',
             'icon' => 'bi bi-cash-coin',
         ],
+
+         [
+            'text' => 'Lecturas',
+            'url'  => 'lecturas',
+            'icon' => 'bi bi-water',
+        ],
     ],
 
     /*
