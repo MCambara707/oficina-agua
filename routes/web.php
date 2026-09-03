@@ -6,6 +6,7 @@ use App\Http\Controllers\TarifaController;
 use App\Http\Controllers\ContadorController;
 use App\Http\Controllers\AutenticacionController;
 use App\Http\Controllers\LecturaController;
+use App\Http\Controllers\PagoController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,6 +74,16 @@ Route::middleware('auth')->group(function () {
         Route::resource('contadores', ContadorController::class)
             ->parameters(['contadores' => 'contador'])
             ->except('show');
+
+        // Gestión de pagos (AQ-32 / AQ-33).
+        Route::get('/pagos', [PagoController::class, 'index'])
+            ->name('pagos.index');
+
+        Route::get('/pagos/{recibo}/registrar', [PagoController::class, 'create'])
+            ->name('pagos.create');
+
+        Route::post('/pagos', [PagoController::class, 'store'])
+            ->name('pagos.store');
     });
 
     /*
@@ -93,20 +104,21 @@ Route::middleware('auth')->group(function () {
     | Solo Lector
     |--------------------------------------------------------------------------
     */
- 
+
     Route::middleware('rol:Lector')->group(function () {
- 
+
         // Registro de lecturas (AQ-26 / AQ-27).
         Route::get('/lecturas', [LecturaController::class, 'index'])
             ->name('lecturas.index');
- 
+
         Route::get('/lecturas/crear', [LecturaController::class, 'create'])
             ->name('lecturas.create');
- 
+
         Route::post('/lecturas', [LecturaController::class, 'store'])
             ->name('lecturas.store');
- 
+
         // Consulta AJAX de la última lectura de un contador.
         Route::get('/lecturas/ultima/{contador}', [LecturaController::class, 'ultima'])
             ->name('lecturas.ultima');
+    });
 });

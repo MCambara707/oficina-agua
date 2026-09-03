@@ -231,7 +231,7 @@ return [
     |
     */
 
-    'menu' => [
+      'menu' => [
         [
             'text' => 'Clientes',
             'url'  => 'clientes',
@@ -252,6 +252,11 @@ return [
             'text' => 'Lecturas',
             'url'  => 'lecturas',
             'icon' => 'bi bi-water',
+        ],
+        [
+            'text' => 'Pagos',
+            'url'  => 'pagos',
+            'icon' => 'bi bi-credit-card',
         ],
     ],
 
