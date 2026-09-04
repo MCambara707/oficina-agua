@@ -107,11 +107,11 @@ return [
 
     'layout_topnav' => null,
     'layout_boxed' => null,
-    'layout_fixed_sidebar' => true,   // .layout-fixed
-    'layout_fixed_navbar' => true,    // .fixed-header
-    'layout_fixed_footer' => null,    // .fixed-footer
-    'layout_dark_mode' => null,       // null = respect system / user toggle
-    'layout_rtl' => false,            // Enable right-to-left layout
+    'layout_fixed_sidebar' => true,
+    'layout_fixed_navbar' => true,
+    'layout_fixed_footer' => null,
+    'layout_dark_mode' => null,
+    'layout_rtl' => false,
 
     /*
     |--------------------------------------------------------------------------
@@ -130,25 +130,20 @@ return [
     'control_sidebar' => false,
     'control_sidebar_theme' => 'dark',
 
-    // Documentation URL used by the navbar "Documentation" link and the sidebar
-    // "View documentation" CTA (false to hide the CTA). Defaults to the in-app
-    // docs viewer served at /docs (see the `docs` keys below).
+    // Documentation URL used by the navbar "Documentation" link and sidebar.
     'sidebar_docs_url' => '/docs',
 
-    // Bundled demo/showcase pages (Dashboard v2/v3, Widgets, UI, Forms, Tables,
-    // Layout Options, Theme Generate, auth variants, error pages). Set false to
-    // skip registering their routes in production.
+    // Bundled demo/showcase pages.
     'demo' => true,
     'demo_middleware' => ['web', 'auth'],
 
-    // In-app documentation viewer: renders this package's docs/*.md files at
-    // /docs and /docs/{page}. Set 'docs' => false to disable the route.
+    // In-app documentation viewer.
     'docs' => true,
     'docs_middleware' => ['web'],
 
-    'sidebar_breakpoint' => 'lg',     // sidebar-expand-{breakpoint}
-    'sidebar_mini' => true,           // .sidebar-mini
-    'sidebar_collapse' => false,      // start collapsed
+    'sidebar_breakpoint' => 'lg',
+    'sidebar_mini' => true,
+    'sidebar_collapse' => false,
     'sidebar_collapse_auto_size' => false,
     'sidebar_scrollbar_theme' => 'os-theme-light',
     'sidebar_scrollbar_auto_hide' => 'leave',
@@ -157,27 +152,14 @@ return [
     |--------------------------------------------------------------------------
     | Color theme
     |--------------------------------------------------------------------------
-    |
-    | The sidebar uses data-bs-theme="dark" by default (dark sidebar on a
-    | light page, matching the AdminLTE 4 demos). Set to 'light' for a light
-    | sidebar.
-    |
-    | The four *_color keys repaint the chrome without touching SCSS: each one
-    | is injected into the layout <head> as a CSS custom-property override
-    | (see ColorlibHQ\AdminLte\Support\ThemeColors). Leave a key null to keep
-    | the stock AdminLTE colour. `primary_color` also recolours links and the
-    | primary button variants. Values must be hex — '#rgb' or '#rrggbb';
-    | anything else is ignored. The /demo/theme-generator page previews these
-    | live and writes the snippet for you.
-    |
     */
 
-    'sidebar_theme' => 'dark',  // 'dark' | 'light'
+    'sidebar_theme' => 'dark',
 
-    'primary_color' => null,    // brand colour: links, .btn-primary, --bs-primary
-    'sidebar_color' => null,    // .app-sidebar background
-    'navbar_color' => null,     // .app-header background
-    'footer_color' => null,     // .app-footer background
+    'primary_color' => null,
+    'sidebar_color' => null,
+    'navbar_color' => null,
+    'footer_color' => null,
 
     /*
     |--------------------------------------------------------------------------
@@ -201,9 +183,6 @@ return [
     |--------------------------------------------------------------------------
     | Color mode toggle
     |--------------------------------------------------------------------------
-    |
-    | Shows the Light/Dark/Auto dropdown in the topbar (AdminLTE 4 feature).
-    |
     */
 
     'color_mode_toggle' => true,
@@ -212,26 +191,15 @@ return [
     |--------------------------------------------------------------------------
     | Menu
     |--------------------------------------------------------------------------
-    |
-    | The sidebar (and optional top-nav) menu. Each item is an array. Supported
-    | keys:
-    |
-    |   'header'      => 'SECTION LABEL'            // a section header
-    |   'text'        => 'Dashboard'               // link label (required for links)
-    |   'route'       => 'dashboard'               // named route  -> url
-    |   'url'         => 'admin/users'             // raw url (relative or absolute)
-    |   'icon'        => 'bi bi-speedometer'       // Bootstrap Icons class
-    |   'icon_color'  => 'primary'                 // optional text-{color}
-    |   'label'       => 5                         // badge value
-    |   'label_color' => 'primary'                 // badge color
-    |   'active'      => ['admin/users*']          // url patterns that mark active
-    |   'target'      => '_blank'                  // anchor target
-    |   'can'         => 'view-users'              // gate/permission to show item
-    |   'submenu'     => [ ...child items... ]     // nested items (treeview)
-    |
     */
 
-      'menu' => [
+    'menu' => [
+        [
+            'text'   => 'Estado de cuenta',
+            'route'  => 'dashboard.estado-cuenta',
+            'icon'   => 'bi bi-clipboard-data',
+            'active' => ['dashboard/estado-cuenta*'],
+        ],
         [
             'text' => 'Clientes',
             'url'  => 'clientes',
@@ -247,8 +215,7 @@ return [
             'url'  => 'tarifas',
             'icon' => 'bi bi-cash-coin',
         ],
-
-         [
+        [
             'text' => 'Lecturas',
             'url'  => 'lecturas',
             'icon' => 'bi bi-water',
@@ -264,11 +231,6 @@ return [
     |--------------------------------------------------------------------------
     | Menu filters
     |--------------------------------------------------------------------------
-    |
-    | Filters transform each menu item before rendering. Add your own classes
-    | here (must implement ColorlibHQ\AdminLte\Menu\Filters\FilterInterface).
-    | The defaults handle gates, active state, hrefs, and search items.
-    |
     */
 
     'filters' => [
@@ -282,10 +244,6 @@ return [
     |--------------------------------------------------------------------------
     | Plugins
     |--------------------------------------------------------------------------
-    |
-    | Optional JavaScript libraries integrated with AdminLTE 4. Disable plugins
-    | you don't use to avoid loading unnecessary assets.
-    |
     */
 
     'plugins' => [
@@ -294,39 +252,45 @@ return [
             'css' => 'vendor/flatpickr/flatpickr.min.css',
             'js' => 'vendor/flatpickr/flatpickr.min.js',
         ],
+
         'tom_select' => [
             'enabled' => false,
             'css' => 'vendor/tom-select/tom-select.bootstrap5.min.css',
             'js' => 'vendor/tom-select/tom-select.complete.min.js',
         ],
+
         'tabulator' => [
             'enabled' => false,
             'css' => 'vendor/tabulator-tables/tabulator.min.css',
             'js' => 'vendor/tabulator-tables/tabulator.min.js',
         ],
+
         'quill' => [
             'enabled' => false,
             'css' => 'vendor/quill/quill.snow.css',
             'js' => 'vendor/quill/quill.min.js',
         ],
+
         'apexcharts' => [
             'enabled' => false,
             'js' => 'vendor/apexcharts/apexcharts.min.js',
         ],
+
         'jsvectormap' => [
             'enabled' => false,
             'css' => 'vendor/jsvectormap/jsvectormap.min.css',
-            // The library first, then the world map data (registers the 'world' map).
             'js' => [
                 'vendor/jsvectormap/jsvectormap.min.js',
                 'vendor/jsvectormap/maps/world.js',
             ],
         ],
+
         'fullcalendar' => [
             'enabled' => false,
             'css' => 'vendor/fullcalendar/index.global.min.css',
             'js' => 'vendor/fullcalendar/index.global.min.js',
         ],
+
         'sortablejs' => [
             'enabled' => false,
             'js' => 'vendor/sortablejs/sortablejs.min.js',
