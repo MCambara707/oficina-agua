@@ -14,6 +14,14 @@
         </div>
 
         <div class="card-body">
+
+            @if ($recibo->estaAtrasado())
+                <div class="alert alert-warning">
+                    <strong>Recibo atrasado</strong> — {{ $recibo->diasAtraso() }} día(s) desde el vencimiento.
+                    Se acumuló una mora de <strong>Q{{ number_format($recibo->montoMora(), 2) }}</strong>.
+                </div>
+            @endif
+
             <dl class="row">
                 <dt class="col-sm-3">Cliente</dt>
                 <dd class="col-sm-9">{{ $recibo->lectura->contador->cliente->nombre ?? '—' }}</dd>
@@ -21,8 +29,16 @@
                 <dt class="col-sm-3">Fecha de emisión</dt>
                 <dd class="col-sm-9">{{ $recibo->fecha_emision->format('d/m/Y') }}</dd>
 
-                <dt class="col-sm-3">Monto</dt>
+                <dt class="col-sm-3">Monto original</dt>
                 <dd class="col-sm-9">Q{{ number_format($recibo->monto, 2) }}</dd>
+
+                @if ($recibo->estaAtrasado())
+                    <dt class="col-sm-3">Mora acumulada</dt>
+                    <dd class="col-sm-9">Q{{ number_format($recibo->montoMora(), 2) }}</dd>
+
+                    <dt class="col-sm-3">Total a pagar</dt>
+                    <dd class="col-sm-9"><strong>Q{{ number_format($recibo->montoConMora(), 2) }}</strong></dd>
+                @endif
             </dl>
 
             <hr>
@@ -44,7 +60,7 @@
                 <div class="form-group">
                     <label for="monto">Monto a pagar</label>
                     <input type="number" step="0.01" name="monto" id="monto"
-                           class="form-control" value="{{ $recibo->monto }}" required>
+                           class="form-control" value="{{ $recibo->montoConMora() }}" required>
                 </div>
 
                 <div class="form-group">
