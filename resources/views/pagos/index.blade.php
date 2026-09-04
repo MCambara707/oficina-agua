@@ -33,7 +33,9 @@
                         <th>Cliente</th>
                         <th>Fecha emisión</th>
                         <th>Monto</th>
-                        <th>Estado</th>
+                        <th>Atraso</th>
+                        <th>Mora</th>
+                        <th>Total con mora</th>
                         <th style="width: 160px;">Acciones</th>
                     </tr>
                 </thead>
@@ -45,7 +47,23 @@
                             <td>{{ $recibo->fecha_emision->format('d/m/Y') }}</td>
                             <td>Q{{ number_format($recibo->monto, 2) }}</td>
                             <td>
-                                <span class="badge badge-warning">{{ $recibo->estado }}</span>
+                                @if ($recibo->estaAtrasado())
+                                    <span class="badge badge-danger">
+                                        {{ $recibo->diasAtraso() }} día(s)
+                                    </span>
+                                @else
+                                    <span class="badge badge-success">Al día</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if ($recibo->estaAtrasado())
+                                    Q{{ number_format($recibo->montoMora(), 2) }}
+                                @else
+                                    —
+                                @endif
+                            </td>
+                            <td>
+                                <strong>Q{{ number_format($recibo->montoConMora(), 2) }}</strong>
                             </td>
                             <td>
                                 <a href="{{ route('pagos.create', $recibo) }}"
@@ -54,7 +72,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center py-4">
+                            <td colspan="8" class="text-center py-4">
                                 No hay recibos pendientes de pago.
                             </td>
                         </tr>
@@ -64,7 +82,7 @@
         </div>
 
         <div class="card-footer">
-           {{ $recibos->links() }}
+            {{ $recibos->links() }}
         </div>
     </div>
 
