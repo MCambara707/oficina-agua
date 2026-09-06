@@ -8,6 +8,7 @@ use App\Http\Controllers\AutenticacionController;
 use App\Http\Controllers\LecturaController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\DashboardEstadoCuentaController;
+use App\Http\Controllers\ReciboController;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,6 +87,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/pagos', [PagoController::class, 'store'])
             ->name('pagos.store');
 
+        // Recibo imprimible y comprobante de pago (AQ-30).
+        Route::get(
+            '/recibos/{recibo}/imprimir',
+            [ReciboController::class, 'imprimir']
+        )->name('recibos.imprimir');
+
         // Dashboard de estado de cuenta (AQ-35).
         Route::get(
             '/dashboard/estado-cuenta',
@@ -95,7 +102,7 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Solo Administrador
+    | Administrador, Secretaria y Lector
     |--------------------------------------------------------------------------
     */
 
