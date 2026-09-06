@@ -7,6 +7,7 @@ use App\Http\Controllers\ContadorController;
 use App\Http\Controllers\AutenticacionController;
 use App\Http\Controllers\LecturaController;
 use App\Http\Controllers\PagoController;
+use App\Http\Controllers\DashboardEstadoCuentaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -84,6 +85,12 @@ Route::middleware('auth')->group(function () {
 
         Route::post('/pagos', [PagoController::class, 'store'])
             ->name('pagos.store');
+
+        // Dashboard de estado de cuenta (AQ-35).
+        Route::get(
+            '/dashboard/estado-cuenta',
+            [DashboardEstadoCuentaController::class, 'index']
+        )->name('dashboard.estado-cuenta');
     });
 
     /*
