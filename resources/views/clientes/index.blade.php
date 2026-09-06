@@ -18,11 +18,11 @@
 
     <div class="card">
         <div class="card-header">
-            <div class="d-flex justify-content-between align-items-center">
-                <form method="GET" class="form-inline">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <form method="GET" class="d-flex" style="max-width: 400px;">
                     <input type="text" name="q" value="{{ $busqueda }}"
-                           class="form-control mr-2" placeholder="Buscar por nombre o teléfono">
-                    <button type="submit" class="btn btn-secondary">Buscar</button>
+                           class="form-control me-2" placeholder="Buscar por nombre o teléfono">
+                    <button type="submit" class="btn btn-secondary text-nowrap">Buscar</button>
                 </form>
 
                 <a href="{{ route('clientes.create') }}" class="btn btn-primary">
@@ -36,6 +36,7 @@
                 <thead>
                     <tr>
                         <th>Nombre</th>
+                        <th>DPI</th>
                         <th>Teléfono</th>
                         <th>Dirección</th>
                         <th>Estado</th>
@@ -46,6 +47,7 @@
                     @forelse ($clientes as $cliente)
                         <tr>
                             <td>{{ $cliente->nombre }}</td>
+                            <td>{{ $cliente->dpi }}</td>
                             <td>{{ $cliente->telefono ?? '—' }}</td>
                             <td>{{ $cliente->direccion_principal ?? '—' }}</td>
                             <td>
@@ -72,7 +74,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="text-center py-4">
+                            <td colspan="6" class="text-center py-4">
                                 No hay clientes registrados todavía.
                             </td>
                         </tr>
