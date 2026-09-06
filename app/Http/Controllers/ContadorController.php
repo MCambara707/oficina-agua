@@ -14,8 +14,12 @@ class ContadorController extends Controller
 
         $contadores = Contador::with('cliente')
             ->when($busqueda, function ($query, $busqueda) {
-                return $query->where('numero_registro', 'like', "%{$busqueda}%")
-                             ->orWhere('direccion_servicio', 'like', "%{$busqueda}%");
+                return $query->where(function ($q) use ($busqueda) {
+                    $q->where('numero_registro', 'like', "%{$busqueda}%")
+                      ->orWhere('direccion_servicio', 'like', "%{$busqueda}%")
+                      ->orWhere('punto_referencia', 'like', "%{$busqueda}%")
+                      ->orWhere('sector', 'like', "%{$busqueda}%");
+                });
             })
             ->orderBy('numero_registro')
             ->paginate(10)
@@ -27,6 +31,7 @@ class ContadorController extends Controller
     public function create()
     {
         $clientes = Cliente::orderBy('nombre')->get();
+
         return view('contadores.create', compact('clientes'));
     }
 
@@ -35,10 +40,30 @@ class ContadorController extends Controller
         $datos = $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
             'numero_registro' => 'required|string|max:50|unique:contadores,numero_registro',
-            'direccion_servicio' => 'required|string|max:255',
-            'referencia' => 'nullable|string|max:150',
-            'sector' => 'nullable|string|max:100',
+
+            'direccion_servicio' => [
+                'nullable',
+                'string',
+                'max:255',
+                'required_without_all:punto_referencia,sector',
+            ],
+
+            'punto_referencia' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'sector' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
             'activo' => 'nullable|boolean',
+        ], [
+            'direccion_servicio.required_without_all' =>
+                'Debes ingresar una dirección de servicio, un punto de referencia o un sector.',
         ]);
 
         $datos['activo'] = $request->has('activo') ? 1 : 0;
@@ -53,6 +78,7 @@ class ContadorController extends Controller
     public function edit(Contador $contador)
     {
         $clientes = Cliente::orderBy('nombre')->get();
+
         return view('contadores.edit', compact('contador', 'clientes'));
     }
 
@@ -60,11 +86,32 @@ class ContadorController extends Controller
     {
         $datos = $request->validate([
             'cliente_id' => 'required|exists:clientes,id',
-            'numero_registro' => 'required|string|max:50|unique:contadores,numero_registro,' . $contador->id,
-            'direccion_servicio' => 'required|string|max:255',
-            'referencia' => 'nullable|string|max:150',
-            'sector' => 'nullable|string|max:100',
+            'numero_registro' =>
+                'required|string|max:50|unique:contadores,numero_registro,' . $contador->id,
+
+            'direccion_servicio' => [
+                'nullable',
+                'string',
+                'max:255',
+                'required_without_all:punto_referencia,sector',
+            ],
+
+            'punto_referencia' => [
+                'nullable',
+                'string',
+                'max:255',
+            ],
+
+            'sector' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+
             'activo' => 'nullable|boolean',
+        ], [
+            'direccion_servicio.required_without_all' =>
+                'Debes ingresar una dirección de servicio, un punto de referencia o un sector.',
         ]);
 
         $datos['activo'] = $request->has('activo') ? 1 : 0;
@@ -80,13 +127,17 @@ class ContadorController extends Controller
     {
         try {
             $contador->delete();
+
             return redirect()
                 ->route('contadores.index')
                 ->with('exito', 'Contador eliminado correctamente.');
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()
                 ->route('contadores.index')
-                ->with('error', 'No se puede eliminar: el contador tiene lecturas o recibos asociados. Desactívalo en su lugar.');
+                ->with(
+                    'error',
+                    'No se puede eliminar: el contador tiene lecturas o recibos asociados. Desactívalo en su lugar.'
+                );
         }
     }
 }

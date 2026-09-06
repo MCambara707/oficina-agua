@@ -6,6 +6,8 @@ use App\Http\Controllers\TarifaController;
 use App\Http\Controllers\ContadorController;
 use App\Http\Controllers\AutenticacionController;
 use App\Http\Controllers\LecturaController;
+use App\Http\Controllers\PagoController;
+use App\Http\Controllers\DashboardEstadoCuentaController;
 
 /*
 |--------------------------------------------------------------------------
@@ -73,6 +75,22 @@ Route::middleware('auth')->group(function () {
         Route::resource('contadores', ContadorController::class)
             ->parameters(['contadores' => 'contador'])
             ->except('show');
+
+        // Gestión de pagos (AQ-32 / AQ-33).
+        Route::get('/pagos', [PagoController::class, 'index'])
+            ->name('pagos.index');
+
+        Route::get('/pagos/{recibo}/registrar', [PagoController::class, 'create'])
+            ->name('pagos.create');
+
+        Route::post('/pagos', [PagoController::class, 'store'])
+            ->name('pagos.store');
+
+        // Dashboard de estado de cuenta (AQ-35).
+        Route::get(
+            '/dashboard/estado-cuenta',
+            [DashboardEstadoCuentaController::class, 'index']
+        )->name('dashboard.estado-cuenta');
     });
 
     /*
