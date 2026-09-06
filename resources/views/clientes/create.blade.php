@@ -31,6 +31,12 @@
                 </div>
 
                 <div class="form-group">
+                    <label for="dpi">DPI *</label>
+                    <input type="text" name="dpi" id="dpi"
+                           class="form-control" value="{{ old('dpi') }}" required maxlength="20">
+                </div>
+
+                <div class="form-group">
                     <label for="telefono">Teléfono</label>
                     <input type="text" name="telefono" id="telefono"
                            class="form-control" value="{{ old('telefono') }}">

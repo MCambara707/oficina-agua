@@ -13,6 +13,7 @@ class Cliente extends Model
     // Campos que se pueden llenar de forma masiva (formularios)
     protected $fillable = [
         'nombre',
+        'dpi',
         'telefono',
         'direccion_principal',
         'activo',

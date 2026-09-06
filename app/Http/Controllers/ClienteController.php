@@ -34,6 +34,7 @@ class ClienteController extends Controller
     {
         $datos = $request->validate([
             'nombre' => 'required|string|max:150',
+            'dpi' => 'required|string|max:20|unique:clientes,dpi',
             'telefono' => 'nullable|string|max:25',
             'direccion_principal' => 'nullable|string|max:255',
             'activo' => 'nullable|boolean',
@@ -59,6 +60,7 @@ class ClienteController extends Controller
     {
         $datos = $request->validate([
             'nombre' => 'required|string|max:150',
+            'dpi' => 'required|string|max:20|unique:clientes,dpi,' . $cliente->id,
             'telefono' => 'nullable|string|max:25',
             'direccion_principal' => 'nullable|string|max:255',
             'activo' => 'nullable|boolean',
