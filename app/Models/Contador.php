@@ -12,7 +12,7 @@ class Contador extends Model
         'cliente_id',
         'numero_registro',
         'direccion_servicio',
-        'referencia',
+        'punto_referencia',
         'sector',
         'activo',
     ];
