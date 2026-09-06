@@ -12,7 +12,7 @@ class LecturaController extends Controller
     {
         $busqueda = $request->input('q');
 
-        $lecturas = Lectura::with(['contador.cliente', 'usuarioLector'])
+        $lecturas = Lectura::with(['contador.cliente', 'contador.tarifa', 'usuarioLector'])
             ->when($busqueda, function ($query, $busqueda) {
                 return $query->whereHas('contador', function ($q) use ($busqueda) {
                     $q->where('numero_registro', 'like', "%{$busqueda}%");
@@ -21,6 +21,22 @@ class LecturaController extends Controller
             ->orderByDesc('periodo')
             ->paginate(10)
             ->withQueryString();
+
+        // AQ-28: adjunta la tarifa vigente (según el tipo del contador y la
+        // fecha de la lectura) y un monto estimado, para que se vea el
+        // resultado de la selección de tarifa directamente en el listado.
+        // No incluye exceso sobre la capacidad ni mora todavía — ver la
+        // nota en Contador::tarifaVigente().
+        $lecturas->through(function ($lectura) {
+            $tarifaVigente = $lectura->contador->tarifaVigente($lectura->fecha_lectura);
+
+            $lectura->tarifa_vigente = $tarifaVigente;
+            $lectura->monto_estimado = $tarifaVigente
+                ? $lectura->consumo_m3 * $tarifaVigente->precio_por_m3
+                : null;
+
+            return $lectura;
+        });
 
         return view('lecturas.index', compact('lecturas', 'busqueda'));
     }
@@ -60,7 +76,7 @@ class LecturaController extends Controller
         ]);
 
         // El período se guarda como el primer día del mes (columna DATE en la tabla).
-        $periodoFecha = $datos['periodo'] . '-01';
+        $periodoFecha = $datos['periodo'].'-01';
 
         // La lectura anterior nunca se toma del formulario: se recalcula aquí
         // en el servidor para que nadie pueda manipularla desde el HTML.
@@ -103,13 +119,13 @@ class LecturaController extends Controller
                 'observacion' => $datos['observacion'] ?? null,
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
-            // Red de seguridad: si dos lectores registran al mismo tiempo, la
-            // restricción única de la base (uq_lecturas_contador_periodo)
-            // salta antes que nuestra validación manual de arriba.
+            // Red de seguridad: si dos lectores registran al mismo instante, o
+            // si algo se escapó de las validaciones de arriba, el UNIQUE o
+            // alguno de los CHECK de la base lo va a rechazar aquí.
             return back()
                 ->withInput()
                 ->withErrors([
-                    'periodo' => 'Ya existe una lectura registrada para este contador en este período.',
+                    'lectura_actual' => 'No se pudo guardar la lectura: verifica que el período no esté repetido y que la lectura actual no sea menor a la anterior.',
                 ]);
         }
 

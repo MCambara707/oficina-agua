@@ -81,32 +81,14 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware('rol:Administrador')->group(function () {
+    Route::middleware('rol:Administrador,Secretaria,Lector')->group(function () {
 
         // Gestión de tarifas.
         Route::resource('tarifas', TarifaController::class)
             ->except('show');
-    });
 
-    /*
-    |--------------------------------------------------------------------------
-    | Solo Lector
-    |--------------------------------------------------------------------------
-    */
- 
-    Route::middleware('rol:Lector')->group(function () {
- 
-        // Registro de lecturas (AQ-26 / AQ-27).
-        Route::get('/lecturas', [LecturaController::class, 'index'])
-            ->name('lecturas.index');
- 
-        Route::get('/lecturas/crear', [LecturaController::class, 'create'])
-            ->name('lecturas.create');
- 
-        Route::post('/lecturas', [LecturaController::class, 'store'])
-            ->name('lecturas.store');
- 
-        // Consulta AJAX de la última lectura de un contador.
-        Route::get('/lecturas/ultima/{contador}', [LecturaController::class, 'ultima'])
-            ->name('lecturas.ultima');
+        // Registro y consulta de lecturas.
+        Route::resource('lecturas', LecturaController::class)
+            ->only(['index', 'create', 'store']);
+    });
 });
