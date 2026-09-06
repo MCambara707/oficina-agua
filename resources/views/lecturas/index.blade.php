@@ -40,6 +40,8 @@
                         <th>Lectura anterior</th>
                         <th>Lectura actual</th>
                         <th>Consumo (m³)</th>
+                        <th>Tarifa vigente</th>
+                        <th>Monto estimado*</th>
                         <th>Lector</th>
                         <th>Fecha</th>
                     </tr>
@@ -53,16 +55,36 @@
                             <td>{{ number_format($lectura->lectura_anterior, 3) }}</td>
                             <td>{{ number_format($lectura->lectura_actual, 3) }}</td>
                             <td>{{ number_format($lectura->consumo_m3, 3) }}</td>
+                            <td>
+                                @if ($lectura->tarifa_vigente)
+                                    {{ $lectura->tarifa_vigente->tipo }}
+                                    (Q{{ number_format($lectura->tarifa_vigente->precio_por_m3, 2) }}/m³)
+                                @else
+                                    <span class="text-muted">Sin tarifa vigente</span>
+                                @endif
+                            </td>
+                            <td>
+                                @if ($lectura->monto_estimado !== null)
+                                    Q{{ number_format($lectura->monto_estimado, 2) }}
+                                @else
+                                    —
+                                @endif
+                            </td>
                             <td>{{ $lectura->usuarioLector->nombre }}</td>
                             <td>{{ $lectura->fecha_lectura->format('d/m/Y') }}</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="8" class="text-center">No hay lecturas registradas todavía.</td>
+                            <td colspan="10" class="text-center">No hay lecturas registradas todavía.</td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+
+            <small class="text-muted">
+                * Monto estimado = consumo × precio por m³ de la tarifa vigente. No incluye exceso sobre la
+                capacidad contratada ni mora — esas fórmulas todavía están pendientes de confirmación.
+            </small>
 
             {{ $lecturas->links() }}
 
