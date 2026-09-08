@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Contador;
 use App\Models\Lectura;
+use App\Services\Redondeo;
 use Illuminate\Http\Request;
 
 class LecturaController extends Controller
@@ -32,7 +33,7 @@ class LecturaController extends Controller
 
             $lectura->tarifa_vigente = $tarifaVigente;
             $lectura->monto_estimado = $tarifaVigente
-                ? $lectura->consumo_m3 * $tarifaVigente->precio_por_m3
+                ? Redondeo::monto($lectura->consumo_m3 * $tarifaVigente->precio_por_m3)
                 : null;
 
             return $lectura;
