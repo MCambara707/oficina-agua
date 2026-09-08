@@ -21,7 +21,11 @@
                 </div>
             @endif
 
-            <form action="{{ route('contadores.update', $contador) }}" method="POST">
+            <form
+                action="{{ route('contadores.update', $contador) }}"
+                method="POST"
+                enctype="multipart/form-data"
+            >
                 @csrf
                 @method('PUT')
 
@@ -46,7 +50,40 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="numero_registro">Número de registro *</label>
+                    <label for="tarifa_id">Tarifa asignada *</label>
+
+                    <select
+                        name="tarifa_id"
+                        id="tarifa_id"
+                        class="form-control"
+                        required
+                    >
+                        <option value="">-- Selecciona una tarifa --</option>
+
+                        @foreach ($tarifas as $tarifa)
+                            <option
+                                value="{{ $tarifa->id }}"
+                                {{ old('tarifa_id', $contador->tarifa_id) == $tarifa->id ? 'selected' : '' }}
+                            >
+                                {{ $tarifa->nombre }}
+                                - {{ $tarifa->tipo }}
+
+                                @if (!is_null($tarifa->capacidad))
+                                    ({{ $tarifa->capacidad }} m³)
+                                @endif
+
+                                @if (!$tarifa->activo)
+                                    - Inactiva
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="numero_registro">
+                        Número de registro *
+                    </label>
 
                     <input
                         type="text"
@@ -54,18 +91,14 @@
                         id="numero_registro"
                         class="form-control"
                         value="{{ old('numero_registro', $contador->numero_registro) }}"
+                        maxlength="50"
                         required
                     >
                 </div>
 
-                <div class="alert alert-info">
-                    Ingresa al menos una forma de ubicación:
-                    dirección de servicio, punto de referencia o sector.
-                </div>
-
                 <div class="form-group">
                     <label for="direccion_servicio">
-                        Dirección de servicio
+                        Dirección de servicio *
                     </label>
 
                     <input
@@ -74,7 +107,9 @@
                         id="direccion_servicio"
                         class="form-control"
                         value="{{ old('direccion_servicio', $contador->direccion_servicio) }}"
+                        maxlength="255"
                         placeholder="Ej. 4a avenida 2-15, zona 1"
+                        required
                     >
                 </div>
 
@@ -89,14 +124,13 @@
                         id="punto_referencia"
                         class="form-control"
                         value="{{ old('punto_referencia', $contador->punto_referencia) }}"
-                        placeholder="Ej. Casa verde, 100 metros después de la iglesia"
+                        maxlength="255"
+                        placeholder="Ej. Casa verde, frente a la iglesia"
                     >
                 </div>
 
                 <div class="form-group">
-                    <label for="sector">
-                        Sector
-                    </label>
+                    <label for="sector">Sector</label>
 
                     <input
                         type="text"
@@ -104,8 +138,49 @@
                         id="sector"
                         class="form-control"
                         value="{{ old('sector', $contador->sector) }}"
+                        maxlength="100"
                         placeholder="Ej. Barrio El Centro"
                     >
+                </div>
+
+                <div class="form-group">
+                    <label>
+                        Fotografía actual
+                    </label>
+
+                    <div class="mb-2">
+                        @if ($contador->foto_ruta)
+                            <img
+                                src="{{ asset('storage/' . $contador->foto_ruta) }}"
+                                alt="Fotografía del contador"
+                                class="img-thumbnail"
+                                style="max-width: 250px; max-height: 200px;"
+                            >
+                        @else
+                            <p class="text-muted mb-0">
+                                Este contador no tiene fotografía registrada.
+                            </p>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="foto">
+                        Reemplazar fotografía
+                    </label>
+
+                    <input
+                        type="file"
+                        name="foto"
+                        id="foto"
+                        class="form-control"
+                        accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    >
+
+                    <small class="form-text text-muted">
+                        Déjalo vacío para conservar la fotografía actual.
+                        Formatos permitidos: JPG, PNG o WEBP. Máximo 2 MB.
+                    </small>
                 </div>
 
                 <div class="form-group form-check">
@@ -118,12 +193,18 @@
                         {{ old('activo', $contador->activo) ? 'checked' : '' }}
                     >
 
-                    <label class="form-check-label" for="activo">
+                    <label
+                        class="form-check-label"
+                        for="activo"
+                    >
                         Activo
                     </label>
                 </div>
 
-                <button type="submit" class="btn btn-primary">
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
                     Actualizar
                 </button>
 

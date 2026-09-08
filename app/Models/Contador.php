@@ -10,9 +10,11 @@ class Contador extends Model
 
     protected $fillable = [
         'cliente_id',
+        'tarifa_id',
         'numero_registro',
         'direccion_servicio',
         'punto_referencia',
+        'foto_ruta',
         'sector',
         'activo',
     ];
@@ -26,26 +28,11 @@ class Contador extends Model
         return $this->belongsTo(Cliente::class, 'cliente_id');
     }
 
-    // AQ-28: relación de solo lectura hacia la tarifa contratada. No se
-    // agrega tarifa_id a $fillable porque asignar o cambiar la tarifa de
-    // un contador no es parte de esta tarjeta (eso lo maneja el CRUD de
-    // contadores).
     public function tarifa()
     {
         return $this->belongsTo(Tarifa::class, 'tarifa_id');
     }
 
-    /**
-     * Tarifa realmente vigente para este contador en una fecha dada
-     * (hoy por defecto). No asume que tarifa_id ya apunta a la fila
-     * vigente: usa el "tipo" de esa tarifa para buscar, entre todas
-     * las filas de ese tipo, la que esté vigente en la fecha indicada.
-     *
-     * Ojo: esto NO aplica exceso sobre la capacidad ni mora todavía.
-     * La fórmula de precio_exceso_m3 sigue pendiente de confirmación
-     * del inge (igual que el redondeo de AQ-22) — aplicarla aquí sería
-     * adivinar la regla.
-     */
     public function tarifaVigente($fecha = null)
     {
         $this->loadMissing('tarifa');

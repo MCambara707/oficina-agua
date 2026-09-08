@@ -23,7 +23,11 @@
     <div class="card">
         <div class="card-body">
 
-            <form method="GET" action="{{ route('contadores.index') }}" class="mb-3">
+            <form
+                method="GET"
+                action="{{ route('contadores.index') }}"
+                class="mb-3"
+            >
                 <div class="input-group" style="max-width: 500px;">
                     <input
                         type="text"
@@ -34,7 +38,10 @@
                     >
 
                     <div class="input-group-append">
-                        <button class="btn btn-secondary" type="submit">
+                        <button
+                            class="btn btn-secondary"
+                            type="submit"
+                        >
                             Buscar
                         </button>
                     </div>
@@ -48,89 +55,133 @@
                 + Nuevo Contador
             </a>
 
-            <table class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>N° Registro</th>
-                        <th>Cliente</th>
-                        <th>Dirección de servicio</th>
-                        <th>Punto de referencia</th>
-                        <th>Sector</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @forelse ($contadores as $contador)
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
                         <tr>
-                            <td>
-                                {{ $contador->numero_registro }}
-                            </td>
+                            <th>N° Registro</th>
+                            <th>Cliente</th>
+                            <th>Tarifa</th>
+                            <th>Dirección de servicio</th>
+                            <th>Punto de referencia</th>
+                            <th>Sector</th>
+                            <th>Fotografía</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
 
-                            <td>
-                                {{ $contador->cliente->nombre }}
-                            </td>
+                    <tbody>
+                        @forelse ($contadores as $contador)
+                            <tr>
+                                <td>
+                                    {{ $contador->numero_registro }}
+                                </td>
 
-                            <td>
-                                {{ $contador->direccion_servicio ?? '—' }}
-                            </td>
+                                <td>
+                                    {{ $contador->cliente->nombre }}
+                                </td>
 
-                            <td>
-                                {{ $contador->punto_referencia ?? '—' }}
-                            </td>
+                                <td>
+                                    @if ($contador->tarifa)
+                                        <strong>
+                                            {{ $contador->tarifa->nombre }}
+                                        </strong>
 
-                            <td>
-                                {{ $contador->sector ?? '—' }}
-                            </td>
+                                        <br>
 
-                            <td>
-                                @if ($contador->activo)
-                                    <span class="badge badge-success">
-                                        Activo
-                                    </span>
-                                @else
-                                    <span class="badge badge-secondary">
-                                        Inactivo
-                                    </span>
-                                @endif
-                            </td>
+                                        <small class="text-muted">
+                                            {{ $contador->tarifa->tipo }}
 
-                            <td>
-                                <a
-                                    href="{{ route('contadores.edit', $contador) }}"
-                                    class="btn btn-sm btn-warning"
-                                >
-                                    Editar
-                                </a>
+                                            @if (!is_null($contador->tarifa->capacidad))
+                                                · {{ $contador->tarifa->capacidad }} m³
+                                            @endif
+                                        </small>
+                                    @else
+                                        <span class="text-danger">
+                                            Sin tarifa
+                                        </span>
+                                    @endif
+                                </td>
 
-                                <form
-                                    action="{{ route('contadores.destroy', $contador) }}"
-                                    method="POST"
-                                    class="d-inline"
-                                    onsubmit="return confirm('¿Eliminar este contador?');"
-                                >
-                                    @csrf
-                                    @method('DELETE')
+                                <td>
+                                    {{ $contador->direccion_servicio }}
+                                </td>
 
-                                    <button
-                                        type="submit"
-                                        class="btn btn-sm btn-danger"
+                                <td>
+                                    {{ $contador->punto_referencia ?? '—' }}
+                                </td>
+
+                                <td>
+                                    {{ $contador->sector ?? '—' }}
+                                </td>
+
+                                <td class="text-center">
+                                    @if ($contador->foto_ruta)
+                                        <img
+                                            src="{{ asset('storage/' . $contador->foto_ruta) }}"
+                                            alt="Fotografía del contador"
+                                            class="img-thumbnail"
+                                            style="width: 80px; height: 60px; object-fit: cover;"
+                                        >
+                                    @else
+                                        <span class="text-muted">
+                                            Sin foto
+                                        </span>
+                                    @endif
+                                </td>
+
+                                <td>
+                                    @if ($contador->activo)
+                                        <span class="badge text-bg-success">
+                                            Activo
+                                        </span>
+                                    @else
+                                        <span class="badge text-bg-secondary">
+                                            Inactivo
+                                        </span>
+                                    @endif
+                                </td>
+
+                                <td>
+                                    <a
+                                        href="{{ route('contadores.edit', $contador) }}"
+                                        class="btn btn-sm btn-warning"
                                     >
-                                        Eliminar
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                    @empty
-                        <tr>
-                            <td colspan="7" class="text-center">
-                                No hay contadores registrados todavía.
-                            </td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                                        Editar
+                                    </a>
+
+                                    <form
+                                        action="{{ route('contadores.destroy', $contador) }}"
+                                        method="POST"
+                                        class="d-inline"
+                                        onsubmit="return confirm('¿Eliminar este contador?');"
+                                    >
+                                        @csrf
+                                        @method('DELETE')
+
+                                        <button
+                                            type="submit"
+                                            class="btn btn-sm btn-danger"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @empty
+                            <tr>
+                                <td
+                                    colspan="9"
+                                    class="text-center"
+                                >
+                                    No hay contadores registrados todavía.
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
 
             {{ $contadores->links() }}
 

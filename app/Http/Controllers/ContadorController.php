@@ -2,9 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Contador;
 use App\Models\Cliente;
+use App\Models\Contador;
+use App\Models\Tarifa;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class ContadorController extends Controller
 {
@@ -12,13 +15,13 @@ class ContadorController extends Controller
     {
         $busqueda = $request->input('q');
 
-        $contadores = Contador::with('cliente')
+        $contadores = Contador::with(['cliente', 'tarifa'])
             ->when($busqueda, function ($query, $busqueda) {
                 return $query->where(function ($q) use ($busqueda) {
                     $q->where('numero_registro', 'like', "%{$busqueda}%")
-                      ->orWhere('direccion_servicio', 'like', "%{$busqueda}%")
-                      ->orWhere('punto_referencia', 'like', "%{$busqueda}%")
-                      ->orWhere('sector', 'like', "%{$busqueda}%");
+                        ->orWhere('direccion_servicio', 'like', "%{$busqueda}%")
+                        ->orWhere('punto_referencia', 'like', "%{$busqueda}%")
+                        ->orWhere('sector', 'like', "%{$busqueda}%");
                 });
             })
             ->orderBy('numero_registro')
@@ -32,20 +35,38 @@ class ContadorController extends Controller
     {
         $clientes = Cliente::orderBy('nombre')->get();
 
-        return view('contadores.create', compact('clientes'));
+        $tarifas = Tarifa::where('activo', true)
+            ->orderBy('nombre')
+            ->orderBy('tipo')
+            ->get();
+
+        return view('contadores.create', compact('clientes', 'tarifas'));
     }
 
     public function store(Request $request)
     {
         $datos = $request->validate([
-            'cliente_id' => 'required|exists:clientes,id',
-            'numero_registro' => 'required|string|max:50|unique:contadores,numero_registro',
+            'cliente_id' => [
+                'required',
+                'exists:clientes,id',
+            ],
+
+            'tarifa_id' => [
+                'required',
+                'exists:tarifas,id',
+            ],
+
+            'numero_registro' => [
+                'required',
+                'string',
+                'max:50',
+                'unique:contadores,numero_registro',
+            ],
 
             'direccion_servicio' => [
-                'nullable',
+                'required',
                 'string',
                 'max:255',
-                'required_without_all:punto_referencia,sector',
             ],
 
             'punto_referencia' => [
@@ -60,11 +81,26 @@ class ContadorController extends Controller
                 'max:100',
             ],
 
-            'activo' => 'nullable|boolean',
-        ], [
-            'direccion_servicio.required_without_all' =>
-                'Debes ingresar una dirección de servicio, un punto de referencia o un sector.',
+            'foto' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,jpg,png,webp',
+                'max:2048',
+            ],
+
+            'activo' => [
+                'nullable',
+                'boolean',
+            ],
         ]);
+
+        if ($request->hasFile('foto')) {
+            $datos['foto_ruta'] = $request
+                ->file('foto')
+                ->store('contadores', 'public');
+        }
+
+        unset($datos['foto']);
 
         $datos['activo'] = $request->has('activo') ? 1 : 0;
 
@@ -79,21 +115,44 @@ class ContadorController extends Controller
     {
         $clientes = Cliente::orderBy('nombre')->get();
 
-        return view('contadores.edit', compact('contador', 'clientes'));
+        $tarifas = Tarifa::where(function ($query) use ($contador) {
+            $query->where('activo', true)
+                ->orWhere('id', $contador->tarifa_id);
+        })
+            ->orderBy('nombre')
+            ->orderBy('tipo')
+            ->get();
+
+        return view(
+            'contadores.edit',
+            compact('contador', 'clientes', 'tarifas')
+        );
     }
 
     public function update(Request $request, Contador $contador)
     {
         $datos = $request->validate([
-            'cliente_id' => 'required|exists:clientes,id',
-            'numero_registro' =>
-                'required|string|max:50|unique:contadores,numero_registro,' . $contador->id,
+            'cliente_id' => [
+                'required',
+                'exists:clientes,id',
+            ],
+
+            'tarifa_id' => [
+                'required',
+                'exists:tarifas,id',
+            ],
+
+            'numero_registro' => [
+                'required',
+                'string',
+                'max:50',
+                'unique:contadores,numero_registro,' . $contador->id,
+            ],
 
             'direccion_servicio' => [
-                'nullable',
+                'required',
                 'string',
                 'max:255',
-                'required_without_all:punto_referencia,sector',
             ],
 
             'punto_referencia' => [
@@ -108,11 +167,35 @@ class ContadorController extends Controller
                 'max:100',
             ],
 
-            'activo' => 'nullable|boolean',
-        ], [
-            'direccion_servicio.required_without_all' =>
-                'Debes ingresar una dirección de servicio, un punto de referencia o un sector.',
+            'foto' => [
+                'nullable',
+                'image',
+                'mimes:jpeg,jpg,png,webp',
+                'max:2048',
+            ],
+
+            'activo' => [
+                'nullable',
+                'boolean',
+            ],
         ]);
+
+        if ($request->hasFile('foto')) {
+            $fotoAnterior = $contador->foto_ruta;
+
+            $datos['foto_ruta'] = $request
+                ->file('foto')
+                ->store('contadores', 'public');
+
+            if (
+                $fotoAnterior &&
+                Storage::disk('public')->exists($fotoAnterior)
+            ) {
+                Storage::disk('public')->delete($fotoAnterior);
+            }
+        }
+
+        unset($datos['foto']);
 
         $datos['activo'] = $request->has('activo') ? 1 : 0;
 
@@ -126,12 +209,21 @@ class ContadorController extends Controller
     public function destroy(Contador $contador)
     {
         try {
+            $fotoRuta = $contador->foto_ruta;
+
             $contador->delete();
+
+            if (
+                $fotoRuta &&
+                Storage::disk('public')->exists($fotoRuta)
+            ) {
+                Storage::disk('public')->delete($fotoRuta);
+            }
 
             return redirect()
                 ->route('contadores.index')
                 ->with('exito', 'Contador eliminado correctamente.');
-        } catch (\Illuminate\Database\QueryException $e) {
+        } catch (QueryException $e) {
             return redirect()
                 ->route('contadores.index')
                 ->with(
