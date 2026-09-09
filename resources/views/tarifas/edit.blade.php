@@ -8,6 +8,45 @@
 
 @section('content')
 
+    @php
+        $tiposBase = [
+            '1/2 paja',
+            '1 paja',
+            '2 pajas',
+        ];
+
+        $esTipoBase = in_array(
+            $tarifa->tipo,
+            $tiposBase,
+            true
+        );
+
+        $cantidadActual = null;
+
+        if (
+            !$esTipoBase
+            && preg_match(
+                '/^(\d+)\s+pajas$/',
+                trim($tarifa->tipo),
+                $coincidencia
+            )
+        ) {
+            $cantidadActual = (int) $coincidencia[1];
+        }
+
+        $tipoSelectorActual = old(
+            'tipo_selector',
+            $esTipoBase
+                ? $tarifa->tipo
+                : 'otra_cantidad'
+        );
+
+        $cantidadPajasActual = old(
+            'cantidad_pajas',
+            $cantidadActual
+        );
+    @endphp
+
     <div class="card">
         <div class="card-body">
 
@@ -21,45 +60,206 @@
                 </div>
             @endif
 
-            <form action="{{ route('tarifas.update', $tarifa) }}" method="POST">
+            <form
+                action="{{ route('tarifas.update', $tarifa) }}"
+                method="POST"
+            >
                 @csrf
                 @method('PUT')
 
                 <div class="form-group">
-                    <label for="nombre">Nombre *</label>
-                    <input type="text" name="nombre" id="nombre"
-                           class="form-control" value="{{ old('nombre', $tarifa->nombre) }}" required>
+                    <label for="nombre">
+                        Nombre *
+                    </label>
+
+                    <input
+                        type="text"
+                        name="nombre"
+                        id="nombre"
+                        class="form-control"
+                        value="{{ old('nombre', $tarifa->nombre) }}"
+                        required
+                    >
                 </div>
 
                 <div class="form-group">
-                    <label for="precio_por_m3">Precio por m³ (Q) *</label>
-                    <input type="number" step="0.01" min="0" name="precio_por_m3" id="precio_por_m3"
-                           class="form-control" value="{{ old('precio_por_m3', $tarifa->precio_por_m3) }}" required>
+                    <label for="tipo_selector">
+                        Tipo *
+                    </label>
+
+                    <select
+                        name="tipo_selector"
+                        id="tipo_selector"
+                        class="form-control"
+                        required
+                    >
+                        <option value="">
+                            Seleccione un tipo
+                        </option>
+
+                        <option
+                            value="1/2 paja"
+                            {{ $tipoSelectorActual === '1/2 paja' ? 'selected' : '' }}
+                        >
+                            1/2 paja
+                        </option>
+
+                        <option
+                            value="1 paja"
+                            {{ $tipoSelectorActual === '1 paja' ? 'selected' : '' }}
+                        >
+                            1 paja
+                        </option>
+
+                        <option
+                            value="2 pajas"
+                            {{ $tipoSelectorActual === '2 pajas' ? 'selected' : '' }}
+                        >
+                            2 pajas
+                        </option>
+
+                        <option
+                            value="otra_cantidad"
+                            {{ $tipoSelectorActual === 'otra_cantidad' ? 'selected' : '' }}
+                        >
+                            Otra cantidad
+                        </option>
+                    </select>
+                </div>
+
+                <div
+                    class="form-group"
+                    id="grupo_cantidad_pajas"
+                    style="display: none;"
+                >
+                    <label for="cantidad_pajas">
+                        Cantidad de pajas *
+                    </label>
+
+                    <input
+                        type="number"
+                        name="cantidad_pajas"
+                        id="cantidad_pajas"
+                        class="form-control"
+                        min="3"
+                        step="1"
+                        value="{{ $cantidadPajasActual }}"
+                        placeholder="Ej. 3"
+                    >
+
+                    <small class="form-text text-muted">
+                        Ingrese únicamente un número entero desde 3.
+                        Ejemplo: 3, 10 o 30.
+                    </small>
                 </div>
 
                 <div class="form-group">
-                    <label for="vigente_desde">Vigente desde *</label>
-                    <input type="date" name="vigente_desde" id="vigente_desde"
-                           class="form-control" value="{{ old('vigente_desde', $tarifa->vigente_desde->format('Y-m-d')) }}" required>
+                    <label for="precio_por_m3">
+                        Precio por m³ (Q) *
+                    </label>
+
+                    <input
+                        type="number"
+                        name="precio_por_m3"
+                        id="precio_por_m3"
+                        class="form-control"
+                        step="0.01"
+                        min="0"
+                        value="{{ old('precio_por_m3', $tarifa->precio_por_m3) }}"
+                        required
+                    >
                 </div>
 
                 <div class="form-group">
-                    <label for="vigente_hasta">Vigente hasta</label>
-                    <input type="date" name="vigente_hasta" id="vigente_hasta"
-                           class="form-control" value="{{ old('vigente_hasta', $tarifa->vigente_hasta?->format('Y-m-d')) }}">
+                    <label for="vigente_desde">
+                        Vigente desde *
+                    </label>
+
+                    <input
+                        type="date"
+                        name="vigente_desde"
+                        id="vigente_desde"
+                        class="form-control"
+                        value="{{ old('vigente_desde', $tarifa->vigente_desde->format('Y-m-d')) }}"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="vigente_hasta">
+                        Vigente hasta
+                    </label>
+
+                    <input
+                        type="date"
+                        name="vigente_hasta"
+                        id="vigente_hasta"
+                        class="form-control"
+                        value="{{ old('vigente_hasta', $tarifa->vigente_hasta?->format('Y-m-d')) }}"
+                    >
                 </div>
 
                 <div class="form-group form-check">
-                    <input type="checkbox" name="activo" id="activo"
-                           class="form-check-input" value="1" {{ $tarifa->activo ? 'checked' : '' }}>
-                    <label class="form-check-label" for="activo">Activa</label>
+                    <input
+                        type="checkbox"
+                        name="activo"
+                        id="activo"
+                        class="form-check-input"
+                        value="1"
+                        {{ old('activo', $tarifa->activo) ? 'checked' : '' }}
+                    >
+
+                    <label
+                        class="form-check-label"
+                        for="activo"
+                    >
+                        Activa
+                    </label>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Actualizar</button>
-                <a href="{{ route('tarifas.index') }}" class="btn btn-secondary">Cancelar</a>
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
+                    Actualizar
+                </button>
+
+                <a
+                    href="{{ route('tarifas.index') }}"
+                    class="btn btn-secondary"
+                >
+                    Cancelar
+                </a>
             </form>
 
         </div>
     </div>
 
+@stop
+
+@section('js')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const selector = document.getElementById('tipo_selector');
+            const grupoCantidad = document.getElementById('grupo_cantidad_pajas');
+            const cantidad = document.getElementById('cantidad_pajas');
+
+            function actualizarCantidad() {
+                const mostrar = selector.value === 'otra_cantidad';
+
+                grupoCantidad.style.display = mostrar ? 'block' : 'none';
+
+                cantidad.required = mostrar;
+                cantidad.disabled = !mostrar;
+
+                if (!mostrar) {
+                    cantidad.value = '';
+                }
+            }
+
+            selector.addEventListener('change', actualizarCantidad);
+
+            actualizarCantidad();
+        });
+    </script>
 @stop
