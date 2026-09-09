@@ -192,40 +192,45 @@ return [
     | Menu
     |--------------------------------------------------------------------------
     */
-
-    'menu' => [
-        [
-            'text'   => 'Estado de cuenta',
-            'route'  => 'dashboard.estado-cuenta',
-            'icon'   => 'bi bi-clipboard-data',
-            'active' => ['dashboard/estado-cuenta*'],
-        ],
-        [
-            'text' => 'Clientes',
-            'url'  => 'clientes',
-            'icon' => 'bi bi-people',
-        ],
-        [
-            'text' => 'Contadores',
-            'url'  => 'contadores',
-            'icon' => 'bi bi-speedometer2',
-        ],
-        [
-            'text' => 'Tarifas',
-            'url'  => 'tarifas',
-            'icon' => 'bi bi-cash-coin',
-        ],
-        [
-            'text' => 'Lecturas',
-            'url'  => 'lecturas',
-            'icon' => 'bi bi-water',
-        ],
-        [
-            'text' => 'Pagos',
-            'url'  => 'pagos',
-            'icon' => 'bi bi-credit-card',
-        ],
+'menu' => [
+    [
+        'text'   => 'Estado de cuenta',
+        'route'  => 'dashboard.estado-cuenta',
+        'icon'   => 'bi bi-clipboard-data',
+        'active' => ['dashboard/estado-cuenta*'],
     ],
+    [
+        'text' => 'Clientes',
+        'url'  => 'clientes',
+        'icon' => 'bi bi-people',
+    ],
+    [
+        'text' => 'Contadores',
+        'url'  => 'contadores',
+        'icon' => 'bi bi-speedometer2',
+    ],
+    [
+        'text' => 'Usuarios',
+        'url'  => 'usuarios',
+        'icon' => 'bi bi-person-gear',
+        'can'  => 'administrar-usuarios',
+    ],
+    [
+        'text' => 'Tarifas',
+        'url'  => 'tarifas',
+        'icon' => 'bi bi-cash-coin',
+    ],
+    [
+        'text' => 'Lecturas',
+        'url'  => 'lecturas',
+        'icon' => 'bi bi-water',
+    ],
+    [
+        'text' => 'Pagos',
+        'url'  => 'pagos',
+        'icon' => 'bi bi-credit-card',
+    ],
+],
 
     /*
     |--------------------------------------------------------------------------

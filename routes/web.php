@@ -9,6 +9,7 @@ use App\Http\Controllers\LecturaController;
 use App\Http\Controllers\PagoController;
 use App\Http\Controllers\DashboardEstadoCuentaController;
 use App\Http\Controllers\ReciboController;
+use App\Http\Controllers\UsuarioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -59,6 +60,30 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin-demo', function () {
         return view('admin-demo');
     })->name('admin.demo');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Solo Administrador
+    |--------------------------------------------------------------------------
+    */
+
+    Route::middleware('rol:Administrador')->group(function () {
+
+        /*
+         * AQ-67:
+         * Mantenimiento de usuarios.
+         *
+         * No existe ruta DELETE porque la baja es lógica.
+         */
+        Route::resource('usuarios', UsuarioController::class)
+            ->except(['show', 'destroy']);
+
+        // Activar / desactivar usuario.
+        Route::patch(
+            '/usuarios/{usuario}/estado',
+            [UsuarioController::class, 'cambiarEstado']
+        )->name('usuarios.cambiar-estado');
+    });
 
     /*
     |--------------------------------------------------------------------------
