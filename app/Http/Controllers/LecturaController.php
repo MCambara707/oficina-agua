@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Contador;
 use App\Models\Lectura;
+use App\Models\Recibo;
 use App\Services\Redondeo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LecturaController extends Controller
 {
@@ -13,7 +15,7 @@ class LecturaController extends Controller
     {
         $busqueda = $request->input('q');
 
-        $lecturas = Lectura::with(['contador.cliente', 'contador.tarifa', 'usuarioLector'])
+        $lecturas = Lectura::with(['contador.cliente', 'contador.tarifa', 'usuarioLector', 'recibo'])
             ->when($busqueda, function ($query, $busqueda) {
                 return $query->whereHas('contador', function ($q) use ($busqueda) {
                     $q->where('numero_registro', 'like', "%{$busqueda}%");
@@ -22,22 +24,6 @@ class LecturaController extends Controller
             ->orderByDesc('periodo')
             ->paginate(10)
             ->withQueryString();
-
-        // AQ-28: adjunta la tarifa vigente (según el tipo del contador y la
-        // fecha de la lectura) y un monto estimado, para que se vea el
-        // resultado de la selección de tarifa directamente en el listado.
-        // No incluye exceso sobre la capacidad ni mora todavía — ver la
-        // nota en Contador::tarifaVigente().
-        $lecturas->through(function ($lectura) {
-            $tarifaVigente = $lectura->contador->tarifaVigente($lectura->fecha_lectura);
-
-            $lectura->tarifa_vigente = $tarifaVigente;
-            $lectura->monto_estimado = $tarifaVigente
-                ? Redondeo::monto($lectura->consumo_m3 * $tarifaVigente->precio_por_m3)
-                : null;
-
-            return $lectura;
-        });
 
         return view('lecturas.index', compact('lecturas', 'busqueda'));
     }
@@ -76,6 +62,19 @@ class LecturaController extends Controller
             'observacion' => 'nullable|string|max:255',
         ]);
 
+        $contador = Contador::with('tarifa')->find($datos['contador_id']);
+
+        // AQ-66: la tarifa ahora es fija por contador (ver AQ-42). Sin
+        // tarifa asignada no se puede calcular el monto del recibo, así
+        // que no dejamos ni empezar la operación.
+        if (! $contador->tarifa) {
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'contador_id' => 'Este contador no tiene una tarifa asignada. Asignale una tarifa antes de registrar la lectura.',
+                ]);
+        }
+
         // El período se guarda como el primer día del mes (columna DATE en la tabla).
         $periodoFecha = $datos['periodo'].'-01';
 
@@ -108,21 +107,41 @@ class LecturaController extends Controller
                 ]);
         }
 
+        $consumo = (float) $datos['lectura_actual'] - (float) $lecturaAnterior;
+
         try {
-            Lectura::create([
-                'contador_id' => $datos['contador_id'],
-                'usuario_lector_id' => auth()->id(),
-                'periodo' => $periodoFecha,
-                'fecha_lectura' => now()->toDateString(),
-                'lectura_anterior' => $lecturaAnterior,
-                'lectura_actual' => $datos['lectura_actual'],
-                'consumo_m3' => $datos['lectura_actual'] - $lecturaAnterior,
-                'observacion' => $datos['observacion'] ?? null,
-            ]);
+            [$lectura, $recibo] = DB::transaction(function () use ($datos, $contador, $periodoFecha, $lecturaAnterior, $consumo) {
+                $lectura = Lectura::create([
+                    'contador_id' => $datos['contador_id'],
+                    'usuario_lector_id' => auth()->id(),
+                    'periodo' => $periodoFecha,
+                    'fecha_lectura' => now()->toDateString(),
+                    'lectura_anterior' => $lecturaAnterior,
+                    'lectura_actual' => $datos['lectura_actual'],
+                    'consumo_m3' => $consumo,
+                    'observacion' => $datos['observacion'] ?? null,
+                ]);
+
+                [$monto, $observacionRecibo] = $this->calcularMonto($contador->tarifa, $consumo);
+
+                $recibo = Recibo::create([
+                    'lectura_id' => $lectura->id,
+                    'tarifa_id' => $contador->tarifa->id,
+                    'numero_recibo' => sprintf('REC-%06d', $lectura->id),
+                    'fecha_emision' => now()->toDateString(),
+                    'monto' => $monto,
+                    'estado' => 'PENDIENTE',
+                    'observacion' => $observacionRecibo,
+                ]);
+
+                return [$lectura, $recibo];
+            });
         } catch (\Illuminate\Database\QueryException $e) {
             // Red de seguridad: si dos lectores registran al mismo instante, o
             // si algo se escapó de las validaciones de arriba, el UNIQUE o
-            // alguno de los CHECK de la base lo va a rechazar aquí.
+            // alguno de los CHECK de la base lo va a rechazar aquí. Al estar
+            // dentro de DB::transaction(), si esto falla no queda ni la
+            // lectura ni el recibo a medio guardar.
             return back()
                 ->withInput()
                 ->withErrors([
@@ -132,6 +151,49 @@ class LecturaController extends Controller
 
         return redirect()
             ->route('lecturas.index')
-            ->with('exito', 'Lectura registrada correctamente.');
+            ->with('exito', 'Lectura y recibo N.° '.$recibo->numero_recibo.' registrados correctamente.');
+    }
+
+    /**
+     * AQ-66 — Calcula el monto del recibo a partir del consumo y la
+     * tarifa fija del contador.
+     *
+     * Si la tarifa no tiene `capacidad` definida, todo el consumo se
+     * cobra a `precio_por_m3`. Si la tiene y el consumo se pasa, el
+     * excedente se cobra a `precio_exceso_m3`; si ese campo no está
+     * configurado en la tarifa, se usa `precio_por_m3` como respaldo
+     * (para no bloquear el registro por un dato de tarifa incompleto)
+     * y se deja constancia en la observación del recibo.
+     *
+     * @return array{0: float, 1: ?string} [monto, observacion]
+     */
+    private function calcularMonto($tarifa, float $consumo): array
+    {
+        $capacidad = $tarifa->capacidad !== null ? (float) $tarifa->capacidad : null;
+        $precioBase = (float) $tarifa->precio_por_m3;
+
+        if ($capacidad === null || $consumo <= $capacidad) {
+            $monto = Redondeo::monto($consumo * $precioBase);
+
+            return [$monto, null];
+        }
+
+        $consumoDentro = $capacidad;
+        $consumoExceso = $consumo - $capacidad;
+
+        $observacion = null;
+        $precioExceso = $tarifa->precio_exceso_m3 !== null
+            ? (float) $tarifa->precio_exceso_m3
+            : $precioBase;
+
+        if ($tarifa->precio_exceso_m3 === null) {
+            $observacion = 'Exceso facturado al precio base: la tarifa no tiene precio_exceso_m3 configurado.';
+        }
+
+        $monto = Redondeo::monto(
+            ($consumoDentro * $precioBase) + ($consumoExceso * $precioExceso)
+        );
+
+        return [$monto, $observacion];
     }
 }

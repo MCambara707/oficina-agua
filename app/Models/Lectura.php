@@ -36,4 +36,10 @@ class Lectura extends Model
     {
         return $this->belongsTo(User::class, 'usuario_lector_id');
     }
+
+    // AQ-66: cada lectura genera su recibo en la misma operación.
+    public function recibo()
+    {
+        return $this->hasOne(Recibo::class, 'lectura_id');
+    }
 }
