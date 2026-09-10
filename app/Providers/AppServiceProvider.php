@@ -21,6 +21,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        /*
+         * Solo Administrador.
+         *
+         * Utilizado actualmente para el mantenimiento
+         * de usuarios.
+         */
         Gate::define('administrar-usuarios', function (User $user) {
             $user->loadMissing('rol');
 
@@ -28,6 +34,24 @@ class AppServiceProvider extends ServiceProvider
                 && $user->rol
                 && $user->rol->activo
                 && $user->rol->nombre === 'Administrador';
+        });
+
+        /*
+         * AQ-68:
+         * Módulos disponibles únicamente para
+         * Administrador y Secretaria.
+         */
+        Gate::define('ver-modulos-administrativos', function (User $user) {
+            $user->loadMissing('rol');
+
+            return $user->activo
+                && $user->rol
+                && $user->rol->activo
+                && in_array(
+                    $user->rol->nombre,
+                    ['Administrador', 'Secretaria'],
+                    true
+                );
         });
     }
 }

@@ -198,16 +198,19 @@ return [
         'route'  => 'dashboard.estado-cuenta',
         'icon'   => 'bi bi-clipboard-data',
         'active' => ['dashboard/estado-cuenta*'],
+        'can'    => 'ver-modulos-administrativos',
     ],
     [
         'text' => 'Clientes',
         'url'  => 'clientes',
         'icon' => 'bi bi-people',
+        'can'  => 'ver-modulos-administrativos',
     ],
     [
         'text' => 'Contadores',
         'url'  => 'contadores',
         'icon' => 'bi bi-speedometer2',
+        'can'  => 'ver-modulos-administrativos',
     ],
     [
         'text' => 'Usuarios',
@@ -217,33 +220,22 @@ return [
     ],
     [
         'text' => 'Tarifas',
-        'url'  => 'tarifas',
-        'icon' => 'bi bi-cash-coin',
+    'url'  => 'tarifas',
+    'icon' => 'bi bi-cash-coin',
+    'can'  => 'ver-modulos-administrativos',
     ],
-    [
-        'text' => 'Lecturas',
-        'url'  => 'lecturas',
-        'icon' => 'bi bi-water',
-    ],
+  [
+    'text' => 'Lecturas',
+    'url'  => 'lecturas',
+    'icon' => 'bi bi-water',
+],
     [
         'text' => 'Pagos',
         'url'  => 'pagos',
         'icon' => 'bi bi-credit-card',
+        'can'  => 'ver-modulos-administrativos',
     ],
 ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Menu filters
-    |--------------------------------------------------------------------------
-    */
-
-    'filters' => [
-        GateFilter::class,
-        HrefFilter::class,
-        ActiveFilter::class,
-        SearchFilter::class,
-    ],
 
     /*
     |--------------------------------------------------------------------------

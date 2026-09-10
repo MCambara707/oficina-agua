@@ -125,20 +125,29 @@ Route::middleware('auth')->group(function () {
         )->name('dashboard.estado-cuenta');
     });
 
+
     /*
     |--------------------------------------------------------------------------
-    | Administrador, Secretaria y Lector
+    | Tarifas
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware('rol:Administrador,Secretaria,Lector')->group(function () {
-
-        // Gestión de tarifas.
+    // Disponible únicamente para Administrador y Secretaria.
+    Route::middleware('rol:Administrador,Secretaria')->group(function () {
         Route::resource('tarifas', TarifaController::class)
             ->except('show');
+    });
 
-        // Registro y consulta de lecturas.
+    /*
+    |--------------------------------------------------------------------------
+    | Lecturas
+    |--------------------------------------------------------------------------
+    */
+
+    // Disponible para Administrador, Secretaria y Lector.
+    Route::middleware('rol:Administrador,Secretaria,Lector')->group(function () {
         Route::resource('lecturas', LecturaController::class)
             ->only(['index', 'create', 'store']);
     });
+
 });
