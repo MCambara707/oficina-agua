@@ -26,5 +26,6 @@ class Tarifa extends Model
         'mora_porcentaje' => 'decimal:2',
         'mora_monto_fijo' => 'decimal:2',
         'capacidad' => 'decimal:3',
+        'precio_exceso_m3' => 'decimal:2',
     ];
 }
