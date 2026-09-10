@@ -22,11 +22,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-/*
-|--------------------------------------------------------------------------
-| Autenticación
-|--------------------------------------------------------------------------
-*/
+// AQ-69: página de presentación del equipo, enlazada desde el footer.
+Route::get('/equipo', function () {
+    return view('presentacion');
+})->name('equipo');
 
 // Mostrar formulario de inicio de sesión.
 Route::get('/login', [AutenticacionController::class, 'mostrarLogin'])
@@ -149,5 +148,6 @@ Route::middleware('auth')->group(function () {
         Route::resource('lecturas', LecturaController::class)
             ->only(['index', 'create', 'store']);
     });
+
 
 });
