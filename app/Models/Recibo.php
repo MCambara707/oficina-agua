@@ -1,20 +1,23 @@
 <?php
- 
+
 namespace App\Models;
- 
+
 use Illuminate\Database\Eloquent\Model;
- 
+
 class Recibo extends Model
 {
     /**
-     * AQ-34 — Días de gracia antes de considerar un recibo atrasado.
-     * No hay un valor definido por la junta todavía; 15 es un default
-     * razonable y fácil de ajustar cuando se confirme la regla real.
+     * Día límite mensual para realizar el pago sin mora.
+     *
+     * El cliente puede pagar hasta finalizar el día 10.
+     * A partir del día 11, si el recibo continúa PENDIENTE,
+     * se considera atrasado y se aplica la mora configurada
+     * en la tarifa.
      */
-    const DIAS_GRACIA = 15;
- 
+    public const DIA_LIMITE_PAGO = 10;
+
     protected $table = 'recibos';
- 
+
     protected $fillable = [
         'lectura_id',
         'tarifa_id',
@@ -24,81 +27,137 @@ class Recibo extends Model
         'estado',
         'observacion',
     ];
- 
+
     protected $casts = [
         'fecha_emision' => 'date',
         'monto' => 'decimal:2',
     ];
- 
+
     public function lectura()
     {
         return $this->belongsTo(Lectura::class);
     }
- 
+
     public function tarifa()
     {
         return $this->belongsTo(Tarifa::class);
     }
- 
+
     public function pago()
     {
         return $this->hasOne(Pago::class);
     }
- 
+
     /**
-     * AQ-34 — Fecha límite antes de que el recibo empiece a generar mora.
+     * Obtiene la fecha límite de pago.
+     *
+     * Si el recibo se emite entre los días 1 y 10,
+     * vence el día 10 del mismo mes.
+     *
+     * Si el recibo se emite después del día 10,
+     * vence el día 10 del mes siguiente.
      */
     public function fechaVencimiento()
     {
-        return $this->fecha_emision->copy()->addDays(self::DIAS_GRACIA);
+        $fechaEmision = $this->fecha_emision->copy();
+
+        if ($fechaEmision->day <= self::DIA_LIMITE_PAGO) {
+            return $fechaEmision
+                ->copy()
+                ->day(self::DIA_LIMITE_PAGO)
+                ->endOfDay();
+        }
+
+        return $fechaEmision
+            ->copy()
+            ->addMonthNoOverflow()
+            ->startOfMonth()
+            ->day(self::DIA_LIMITE_PAGO)
+            ->endOfDay();
     }
- 
+
     /**
-     * AQ-34 — Un recibo está atrasado si sigue PENDIENTE después de su
-     * fecha de vencimiento. Un recibo PAGADO o ANULADO nunca se considera
-     * atrasado, aunque haya pasado la fecha.
+     * Un recibo está atrasado cuando:
+     *
+     * - continúa en estado PENDIENTE;
+     * - y ya pasó completamente el día 10 correspondiente.
+     *
+     * PAGADO y ANULADO nunca generan mora.
      */
     public function estaAtrasado(): bool
     {
         return $this->estado === 'PENDIENTE'
             && now()->greaterThan($this->fechaVencimiento());
     }
- 
+
     /**
-     * AQ-34 — Días transcurridos desde el vencimiento (0 si no está atrasado).
+     * Cantidad de días de atraso.
+     *
+     * Si todavía está dentro del plazo de pago,
+     * devuelve cero.
      */
     public function diasAtraso(): int
     {
         if (! $this->estaAtrasado()) {
             return 0;
         }
- 
+
         return (int) $this->fechaVencimiento()->diffInDays(now());
     }
- 
+
     /**
-     * AQ-34 — Mora acumulada: monto fijo de la tarifa + porcentaje sobre
-     * el monto del recibo. Cualquiera de los dos puede ser null en la
-     * tarifa (no todas las tarifas aplican mora); en ese caso no suma.
+     * Calcula la mora configurada en la tarifa.
+     *
+     * La mora puede contener:
+     *
+     * - un porcentaje sobre el monto del recibo;
+     * - un monto fijo;
+     * - o ambos.
+     *
+     * Si existen ambos, se suman.
+     *
+     * La mora se aplica una sola vez cuando el recibo
+     * está vencido. No se incrementa diariamente.
      */
     public function montoMora(): float
     {
         if (! $this->estaAtrasado() || ! $this->tarifa) {
             return 0.0;
         }
- 
-        $fijo = (float) ($this->tarifa->mora_monto_fijo ?? 0);
-        $porcentaje = (float) ($this->tarifa->mora_porcentaje ?? 0);
- 
-        return round($fijo + ($this->monto * $porcentaje / 100), 2);
+
+        $montoRecibo = (float) $this->monto;
+
+        $moraFija = (float) (
+            $this->tarifa->mora_monto_fijo ?? 0
+        );
+
+        $moraPorcentaje = (float) (
+            $this->tarifa->mora_porcentaje ?? 0
+        );
+
+        $montoPorcentaje = $montoRecibo
+            * ($moraPorcentaje / 100);
+
+        return round(
+            $moraFija + $montoPorcentaje,
+            2
+        );
     }
- 
+
     /**
-     * AQ-34 — Monto total a pagar incluyendo mora (para mostrar en
-     * pantalla; no reemplaza el campo `monto` original del recibo).
+     * Total que debe pagar el cliente.
+     *
+     * Antes del vencimiento:
+     * monto original.
+     *
+     * Después del vencimiento:
+     * monto original + mora.
      */
     public function montoConMora(): float
     {
-        return round((float) $this->monto + $this->montoMora(), 2);
+        return round(
+            (float) $this->monto + $this->montoMora(),
+            2
+        );
     }
 }
