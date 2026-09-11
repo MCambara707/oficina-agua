@@ -13,6 +13,7 @@
 
             @if ($errors->any())
                 <div class="alert alert-danger">
+                    <p class="font-weight-bold mb-1">Por favor corrige los siguientes errores:</p>
                     <ul class="mb-0">
                         @foreach ($errors->all() as $error)
                             <li>{{ $error }}</li>
@@ -35,7 +36,7 @@
                     <select
                         name="cliente_id"
                         id="cliente_id"
-                        class="form-control"
+                        class="form-control @error('cliente_id') is-invalid @enderror"
                         required
                     >
                         @foreach ($clientes as $cliente)
@@ -47,6 +48,10 @@
                             </option>
                         @endforeach
                     </select>
+
+                    @error('cliente_id')
+                        <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div class="form-group">
@@ -55,7 +60,7 @@
                     <select
                         name="tarifa_id"
                         id="tarifa_id"
-                        class="form-control"
+                        class="form-control @error('tarifa_id') is-invalid @enderror"
                         required
                     >
                         <option value="">-- Selecciona una tarifa --</option>
@@ -78,6 +83,39 @@
                             </option>
                         @endforeach
                     </select>
+
+                    @error('tarifa_id')
+                        <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="servicio_id">Servicio</label>
+
+                    <select
+                        name="servicio_id"
+                        id="servicio_id"
+                        class="form-control @error('servicio_id') is-invalid @enderror"
+                    >
+                        <option value="">-- Sin servicio asignado --</option>
+
+                        @foreach ($servicios as $servicio)
+                            <option
+                                value="{{ $servicio->id }}"
+                                {{ old('servicio_id', $contador->servicio_id) == $servicio->id ? 'selected' : '' }}
+                            >
+                                {{ $servicio->nombre }}
+
+                                @if (!$servicio->activo)
+                                    - Inactivo
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
+
+                    @error('servicio_id')
+                        <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div class="form-group">
@@ -89,11 +127,15 @@
                         type="text"
                         name="numero_registro"
                         id="numero_registro"
-                        class="form-control"
+                        class="form-control @error('numero_registro') is-invalid @enderror"
                         value="{{ old('numero_registro', $contador->numero_registro) }}"
                         maxlength="50"
                         required
                     >
+
+                    @error('numero_registro')
+                        <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div class="form-group">
@@ -105,12 +147,16 @@
                         type="text"
                         name="direccion_servicio"
                         id="direccion_servicio"
-                        class="form-control"
+                        class="form-control @error('direccion_servicio') is-invalid @enderror"
                         value="{{ old('direccion_servicio', $contador->direccion_servicio) }}"
                         maxlength="255"
                         placeholder="Ej. 4a avenida 2-15, zona 1"
                         required
                     >
+
+                    @error('direccion_servicio')
+                        <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div class="form-group">
@@ -122,11 +168,15 @@
                         type="text"
                         name="punto_referencia"
                         id="punto_referencia"
-                        class="form-control"
+                        class="form-control @error('punto_referencia') is-invalid @enderror"
                         value="{{ old('punto_referencia', $contador->punto_referencia) }}"
                         maxlength="255"
                         placeholder="Ej. Casa verde, frente a la iglesia"
                     >
+
+                    @error('punto_referencia')
+                        <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div class="form-group">
@@ -136,11 +186,15 @@
                         type="text"
                         name="sector"
                         id="sector"
-                        class="form-control"
+                        class="form-control @error('sector') is-invalid @enderror"
                         value="{{ old('sector', $contador->sector) }}"
                         maxlength="100"
                         placeholder="Ej. Barrio El Centro"
                     >
+
+                    @error('sector')
+                        <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div class="form-group">
@@ -173,7 +227,7 @@
                         type="file"
                         name="foto"
                         id="foto"
-                        class="form-control"
+                        class="form-control @error('foto') is-invalid @enderror"
                         accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
                     >
 
@@ -181,6 +235,10 @@
                         Déjalo vacío para conservar la fotografía actual.
                         Formatos permitidos: JPG, PNG o WEBP. Máximo 2 MB.
                     </small>
+
+                    @error('foto')
+                        <span class="invalid-feedback d-block">{{ $message }}</span>
+                    @enderror
                 </div>
 
                 <div class="form-group form-check">

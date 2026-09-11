@@ -11,6 +11,7 @@ class Contador extends Model
     protected $fillable = [
         'cliente_id',
         'tarifa_id',
+        'servicio_id',
         'numero_registro',
         'direccion_servicio',
         'punto_referencia',
@@ -31,6 +32,11 @@ class Contador extends Model
     public function tarifa()
     {
         return $this->belongsTo(Tarifa::class, 'tarifa_id');
+    }
+
+    public function servicio()
+    {
+        return $this->belongsTo(Servicio::class, 'servicio_id');
     }
 
     public function tarifaVigente($fecha = null)

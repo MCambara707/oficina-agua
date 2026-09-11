@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cliente;
 use App\Models\Contador;
+use App\Models\Servicio;
 use App\Models\Tarifa;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -15,7 +16,7 @@ class ContadorController extends Controller
     {
         $busqueda = $request->input('q');
 
-        $contadores = Contador::with(['cliente', 'tarifa'])
+        $contadores = Contador::with(['cliente', 'tarifa', 'servicio'])
             ->when($busqueda, function ($query, $busqueda) {
                 return $query->where(function ($q) use ($busqueda) {
                     $q->where('numero_registro', 'like', "%{$busqueda}%")
@@ -40,7 +41,11 @@ class ContadorController extends Controller
             ->orderBy('tipo')
             ->get();
 
-        return view('contadores.create', compact('clientes', 'tarifas'));
+        $servicios = Servicio::where('activo', true)
+            ->orderBy('nombre')
+            ->get();
+
+        return view('contadores.create', compact('clientes', 'tarifas', 'servicios'));
     }
 
     public function store(Request $request)
@@ -54,6 +59,11 @@ class ContadorController extends Controller
             'tarifa_id' => [
                 'required',
                 'exists:tarifas,id',
+            ],
+
+            'servicio_id' => [
+                'nullable',
+                'exists:servicios,id',
             ],
 
             'numero_registro' => [
@@ -123,9 +133,16 @@ class ContadorController extends Controller
             ->orderBy('tipo')
             ->get();
 
+        $servicios = Servicio::where(function ($query) use ($contador) {
+            $query->where('activo', true)
+                ->orWhere('id', $contador->servicio_id);
+        })
+            ->orderBy('nombre')
+            ->get();
+
         return view(
             'contadores.edit',
-            compact('contador', 'clientes', 'tarifas')
+            compact('contador', 'clientes', 'tarifas', 'servicios')
         );
     }
 
@@ -140,6 +157,11 @@ class ContadorController extends Controller
             'tarifa_id' => [
                 'required',
                 'exists:tarifas,id',
+            ],
+
+            'servicio_id' => [
+                'nullable',
+                'exists:servicios,id',
             ],
 
             'numero_registro' => [
