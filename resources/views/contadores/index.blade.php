@@ -9,161 +9,94 @@
 @section('content')
 
     @if (session('exito'))
-        <div class="alert alert-success">
-            {{ session('exito') }}
-        </div>
+        <div class="alert alert-success">{{ session('exito') }}</div>
     @endif
 
     @if (session('error'))
-        <div class="alert alert-danger">
-            {{ session('error') }}
-        </div>
+        <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
 
     <div class="card">
-        <div class="card-body">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <form method="GET" action="{{ route('contadores.index') }}" class="d-flex" style="max-width: 500px;">
+                    <input type="text" name="q" value="{{ $busqueda }}"
+                           class="form-control mr-2 me-2" placeholder="Buscar por número, dirección, referencia o sector">
+                    <button type="submit" class="btn btn-secondary text-nowrap">Buscar</button>
+                </form>
 
-            <form
-                method="GET"
-                action="{{ route('contadores.index') }}"
-                class="mb-3"
-            >
-                <div class="input-group" style="max-width: 500px;">
-                    <input
-                        type="text"
-                        name="q"
-                        class="form-control"
-                        placeholder="Buscar por número, dirección, referencia o sector"
-                        value="{{ $busqueda }}"
-                    >
+                <a href="{{ route('contadores.create') }}" class="btn btn-primary">
+                    + Nuevo Contador
+                </a>
+            </div>
+        </div>
 
-                    <div class="input-group-append">
-                        <button
-                            class="btn btn-secondary"
-                            type="submit"
-                        >
-                            Buscar
-                        </button>
-                    </div>
-                </div>
-            </form>
-
-            <a
-                href="{{ route('contadores.create') }}"
-                class="btn btn-primary mb-3"
-            >
-                + Nuevo Contador
-            </a>
-
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-bordered table-striped">
+                <table class="table table-bordered table-striped mb-0">
                     <thead>
                         <tr>
                             <th>N° Registro</th>
                             <th>Cliente</th>
                             <th>Tarifa</th>
+                            <th>Servicio</th>
                             <th>Dirección de servicio</th>
                             <th>Punto de referencia</th>
                             <th>Sector</th>
                             <th>Fotografía</th>
                             <th>Estado</th>
-                            <th>Acciones</th>
+                            <th style="width: 160px;">Acciones</th>
                         </tr>
                     </thead>
-
                     <tbody>
                         @forelse ($contadores as $contador)
                             <tr>
-                                <td>
-                                    {{ $contador->numero_registro }}
-                                </td>
-
-                                <td>
-                                    {{ $contador->cliente->nombre }}
-                                </td>
-
+                                <td>{{ $contador->numero_registro }}</td>
+                                <td>{{ $contador->cliente->nombre }}</td>
                                 <td>
                                     @if ($contador->tarifa)
-                                        <strong>
-                                            {{ $contador->tarifa->nombre }}
-                                        </strong>
-
+                                        <strong>{{ $contador->tarifa->nombre }}</strong>
                                         <br>
-
                                         <small class="text-muted">
                                             {{ $contador->tarifa->tipo }}
-
                                             @if (!is_null($contador->tarifa->capacidad))
                                                 · {{ $contador->tarifa->capacidad }} m³
                                             @endif
                                         </small>
                                     @else
-                                        <span class="text-danger">
-                                            Sin tarifa
-                                        </span>
+                                        <span class="text-danger">Sin tarifa</span>
                                     @endif
                                 </td>
-
-                                <td>
-                                    {{ $contador->direccion_servicio }}
-                                </td>
-
-                                <td>
-                                    {{ $contador->punto_referencia ?? '—' }}
-                                </td>
-
-                                <td>
-                                    {{ $contador->sector ?? '—' }}
-                                </td>
-
+                                <td>{{ $contador->servicio->nombre ?? '—' }}</td>
+                                <td>{{ $contador->direccion_servicio }}</td>
+                                <td>{{ $contador->punto_referencia ?? '—' }}</td>
+                                <td>{{ $contador->sector ?? '—' }}</td>
                                 <td class="text-center">
                                     @if ($contador->foto_ruta)
-                                        <img
-                                            src="{{ asset('storage/' . $contador->foto_ruta) }}"
-                                            alt="Fotografía del contador"
-                                            class="img-thumbnail"
-                                            style="width: 80px; height: 60px; object-fit: cover;"
-                                        >
+                                        <img src="{{ asset('storage/' . $contador->foto_ruta) }}"
+                                             alt="Fotografía del contador" class="img-thumbnail"
+                                             style="width: 80px; height: 60px; object-fit: cover;">
                                     @else
-                                        <span class="text-muted">
-                                            Sin foto
-                                        </span>
+                                        <span class="text-muted">Sin foto</span>
                                     @endif
                                 </td>
-
                                 <td>
                                     @if ($contador->activo)
-                                        <span class="badge text-bg-success">
-                                            Activo
-                                        </span>
+                                        <span class="badge badge-success">Activo</span>
                                     @else
-                                        <span class="badge text-bg-secondary">
-                                            Inactivo
-                                        </span>
+                                        <span class="badge badge-secondary">Inactivo</span>
                                     @endif
                                 </td>
-
                                 <td>
-                                    <a
-                                        href="{{ route('contadores.edit', $contador) }}"
-                                        class="btn btn-sm btn-warning"
-                                    >
-                                        Editar
-                                    </a>
+                                    <a href="{{ route('contadores.edit', $contador) }}"
+                                       class="btn btn-sm btn-warning">Editar</a>
 
-                                    <form
-                                        action="{{ route('contadores.destroy', $contador) }}"
-                                        method="POST"
-                                        class="d-inline"
-                                        onsubmit="return confirm('¿Eliminar este contador?');"
-                                    >
+                                    <form action="{{ route('contadores.destroy', $contador) }}"
+                                          method="POST" class="d-inline"
+                                          onsubmit="return confirm('¿Eliminar este contador?');">
                                         @csrf
                                         @method('DELETE')
-
-                                        <button
-                                            type="submit"
-                                            class="btn btn-sm btn-danger"
-                                        >
+                                        <button type="submit" class="btn btn-sm btn-danger">
                                             Eliminar
                                         </button>
                                     </form>
@@ -171,10 +104,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td
-                                    colspan="9"
-                                    class="text-center"
-                                >
+                                <td colspan="10" class="text-center py-4">
                                     No hay contadores registrados todavía.
                                 </td>
                             </tr>
@@ -182,9 +112,10 @@
                     </tbody>
                 </table>
             </div>
+        </div>
 
+        <div class="card-footer">
             {{ $contadores->links() }}
-
         </div>
     </div>
 
