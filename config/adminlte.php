@@ -213,6 +213,12 @@ return [
         'can'  => 'ver-modulos-administrativos',
     ],
     [
+        'text' => 'Servicios',
+        'url'  => 'servicios',
+        'icon' => 'bi bi-tools',
+        'can'  => 'ver-modulos-administrativos',
+    ],
+    [
         'text' => 'Usuarios',
         'url'  => 'usuarios',
         'icon' => 'bi bi-person-gear',
