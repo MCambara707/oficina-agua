@@ -83,6 +83,11 @@ Route::middleware('auth')->group(function () {
             '/usuarios/{usuario}/estado',
             [UsuarioController::class, 'cambiarEstado']
         )->name('usuarios.cambiar-estado');
+
+        // Gestión de tarifas: precios y mora son información sensible,
+        // por eso quedan separadas del grupo de Secretaria/Lector de abajo.
+        Route::resource('tarifas', TarifaController::class)
+            ->except('show');
     });
 
     /*
@@ -132,10 +137,6 @@ Route::middleware('auth')->group(function () {
     */
 
     Route::middleware('rol:Administrador,Secretaria,Lector')->group(function () {
-
-        // Gestión de tarifas.
-        Route::resource('tarifas', TarifaController::class)
-            ->except('show');
 
         // Registro y consulta de lecturas.
         Route::resource('lecturas', LecturaController::class)

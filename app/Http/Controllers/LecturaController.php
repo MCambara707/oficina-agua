@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Contador;
 use App\Models\Lectura;
+use App\Models\Recibo;
 use App\Services\Redondeo;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LecturaController extends Controller
 {
@@ -13,7 +15,7 @@ class LecturaController extends Controller
     {
         $busqueda = $request->input('q');
 
-        $lecturas = Lectura::with(['contador.cliente', 'contador.tarifa', 'usuarioLector'])
+        $lecturas = Lectura::with(['contador.cliente', 'contador.tarifa', 'usuarioLector', 'recibo'])
             ->when($busqueda, function ($query, $busqueda) {
                 return $query->whereHas('contador', function ($q) use ($busqueda) {
                     $q->where('numero_registro', 'like', "%{$busqueda}%");
@@ -109,16 +111,42 @@ class LecturaController extends Controller
         }
 
         try {
-            Lectura::create([
-                'contador_id' => $datos['contador_id'],
-                'usuario_lector_id' => auth()->id(),
-                'periodo' => $periodoFecha,
-                'fecha_lectura' => now()->toDateString(),
-                'lectura_anterior' => $lecturaAnterior,
-                'lectura_actual' => $datos['lectura_actual'],
-                'consumo_m3' => $datos['lectura_actual'] - $lecturaAnterior,
-                'observacion' => $datos['observacion'] ?? null,
-            ]);
+            $lectura = DB::transaction(function () use ($datos, $periodoFecha, $lecturaAnterior) {
+                $lectura = Lectura::create([
+                    'contador_id' => $datos['contador_id'],
+                    'usuario_lector_id' => auth()->id(),
+                    'periodo' => $periodoFecha,
+                    'fecha_lectura' => now()->toDateString(),
+                    'lectura_anterior' => $lecturaAnterior,
+                    'lectura_actual' => $datos['lectura_actual'],
+                    'consumo_m3' => $datos['lectura_actual'] - $lecturaAnterior,
+                    'observacion' => $datos['observacion'] ?? null,
+                ]);
+
+                // No había ningún lugar en el código que generara un Recibo.
+                // Sin esto, el flujo "lectura -> recibo imprimible" que pide
+                // la demo no tiene nada que mostrar. Lo generamos aquí mismo,
+                // en la misma transacción, usando la tarifa vigente (AQ-28)
+                // y el redondeo configurado (AQ-22). Si el contador no tiene
+                // ninguna tarifa vigente para la fecha, se guarda igual la
+                // lectura pero sin recibo (caso raro: tarifa vencida sin
+                // reemplazo), y se avisa después con un mensaje.
+                $lectura->load('contador');
+                $tarifaVigente = $lectura->contador->tarifaVigente($lectura->fecha_lectura);
+
+                if ($tarifaVigente) {
+                    Recibo::create([
+                        'lectura_id' => $lectura->id,
+                        'tarifa_id' => $tarifaVigente->id,
+                        'numero_recibo' => 'REC-'.$lectura->periodo->format('Ym').'-'.str_pad($lectura->id, 5, '0', STR_PAD_LEFT),
+                        'fecha_emision' => now()->toDateString(),
+                        'monto' => Redondeo::monto($lectura->consumo_m3 * $tarifaVigente->precio_por_m3),
+                        'estado' => 'PENDIENTE',
+                    ]);
+                }
+
+                return $lectura;
+            });
         } catch (\Illuminate\Database\QueryException $e) {
             // Red de seguridad: si dos lectores registran al mismo instante, o
             // si algo se escapó de las validaciones de arriba, el UNIQUE o
@@ -130,8 +158,14 @@ class LecturaController extends Controller
                 ]);
         }
 
+        if (! $lectura->contador->tarifaVigente($lectura->fecha_lectura)) {
+            return redirect()
+                ->route('lecturas.index')
+                ->with('advertencia', 'Lectura registrada, pero el contador no tiene una tarifa vigente hoy: no se generó recibo.');
+        }
+
         return redirect()
             ->route('lecturas.index')
-            ->with('exito', 'Lectura registrada correctamente.');
+            ->with('exito', 'Lectura registrada correctamente. Se generó el recibo asociado.');
     }
 }

@@ -36,4 +36,9 @@ class Lectura extends Model
     {
         return $this->belongsTo(User::class, 'usuario_lector_id');
     }
+
+    public function recibo()
+    {
+        return $this->hasOne(Recibo::class);
+    }
 }
