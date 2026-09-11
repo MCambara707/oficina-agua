@@ -10,6 +10,7 @@ use App\Http\Controllers\PagoController;
 use App\Http\Controllers\DashboardEstadoCuentaController;
 use App\Http\Controllers\ReciboController;
 use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\ServicioController;
 
 /*
 |--------------------------------------------------------------------------
@@ -99,6 +100,13 @@ Route::middleware('auth')->group(function () {
         // Gestión de contadores.
         Route::resource('contadores', ContadorController::class)
             ->parameters(['contadores' => 'contador'])
+            ->except('show');
+
+        /*
+         * Mantenimiento de servicios (catálogo usado por Contadores).
+         * No existe ruta DELETE, se maneja como baja lógica en el controller.
+         */
+        Route::resource('servicios', ServicioController::class)
             ->except('show');
 
         // Gestión de pagos (AQ-32 / AQ-33).
