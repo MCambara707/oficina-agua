@@ -59,12 +59,17 @@
             </a>
 
             <div class="table-responsive">
+
                 <table class="table table-bordered table-striped">
                     <thead>
                         <tr>
                             <th>Nombre</th>
                             <th>Tipo</th>
+                            <th>Capacidad</th>
                             <th>Precio/m³</th>
+                            <th>Exceso/m³</th>
+                            <th>Mora %</th>
+                            <th>Mora fija</th>
                             <th>Vigente desde</th>
                             <th>Vigente hasta</th>
                             <th>Estado</th>
@@ -74,6 +79,7 @@
 
                     <tbody>
                         @forelse ($tarifas as $tarifa)
+
                             <tr>
                                 <td>
                                     {{ $tarifa->nombre }}
@@ -86,7 +92,59 @@
                                 </td>
 
                                 <td>
-                                    Q{{ number_format($tarifa->precio_por_m3, 2) }}
+                                    @if ($tarifa->capacidad !== null)
+                                        {{ (int) $tarifa->capacidad }} m³
+                                    @else
+                                        <span class="text-danger">
+                                            Sin configurar
+                                        </span>
+                                    @endif
+                                </td>
+
+                                <td>
+                                    Q{{ number_format(
+                                        (float) $tarifa->precio_por_m3,
+                                        2
+                                    ) }}
+                                </td>
+
+                                <td>
+                                    @if ($tarifa->precio_exceso_m3 !== null)
+                                        Q{{ number_format(
+                                            (float) $tarifa->precio_exceso_m3,
+                                            2
+                                        ) }}
+                                    @else
+                                        <span class="text-danger">
+                                            Sin configurar
+                                        </span>
+                                    @endif
+                                </td>
+
+                                <td>
+                                    @if ($tarifa->mora_porcentaje !== null)
+                                        {{ number_format(
+                                            (float) $tarifa->mora_porcentaje,
+                                            2
+                                        ) }}%
+                                    @else
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+                                    @endif
+                                </td>
+
+                                <td>
+                                    @if ($tarifa->mora_monto_fijo !== null)
+                                        Q{{ number_format(
+                                            (float) $tarifa->mora_monto_fijo,
+                                            2
+                                        ) }}
+                                    @else
+                                        <span class="text-muted">
+                                            —
+                                        </span>
+                                    @endif
                                 </td>
 
                                 <td>
@@ -141,18 +199,22 @@
                                     </form>
                                 </td>
                             </tr>
+
                         @empty
+
                             <tr>
                                 <td
-                                    colspan="7"
+                                    colspan="11"
                                     class="text-center"
                                 >
                                     No hay tarifas registradas todavía.
                                 </td>
                             </tr>
+
                         @endforelse
                     </tbody>
                 </table>
+
             </div>
 
             {{ $tarifas->links() }}
