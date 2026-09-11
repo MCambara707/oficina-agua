@@ -27,15 +27,15 @@
         >
             <div
                 class="d-flex flex-column flex-md-row
-                    justify-content-between align-items-md-center"
+                    justify-content-between align-items-md-center gap-2"
             >
                 <div>
-                    <i class="fas fa-check-circle mr-1"></i>
+                    <i class="fas fa-check-circle me-1"></i>
                     {{ session('exito') }}
                 </div>
 
                 @if (session('recibo_generado_id'))
-                    <div class="mt-2 mt-md-0 mr-md-4">
+                    <div class="mt-2 mt-md-0 me-md-4">
                         <a
                             href="{{ route(
                                 'recibos.imprimir',
@@ -45,7 +45,7 @@
                             target="_blank"
                             rel="noopener noreferrer"
                         >
-                            <i class="fas fa-print mr-1"></i>
+                            <i class="fas fa-print me-1"></i>
                             Imprimir recibo
                         </a>
                     </div>
@@ -54,11 +54,10 @@
 
             <button
                 type="button"
-                class="close"
-                data-dismiss="alert"
+                class="btn-close"
+                data-bs-dismiss="alert"
                 aria-label="Cerrar"
             >
-                <span aria-hidden="true">&times;</span>
             </button>
         </div>
     @endif
@@ -70,11 +69,10 @@
 
             <button
                 type="button"
-                class="close"
-                data-dismiss="alert"
+                class="btn-close"
+                data-bs-dismiss="alert"
                 aria-label="Cerrar"
             >
-                <span aria-hidden="true">&times;</span>
             </button>
         </div>
     @endif
@@ -89,7 +87,7 @@
 
             <div
                 class="d-flex flex-column flex-md-row
-                       justify-content-between align-items-md-center"
+                       justify-content-between align-items-md-center gap-2"
             >
 
                 <div>
@@ -104,7 +102,7 @@
                         href="{{ route('lecturas.create') }}"
                         class="btn btn-primary"
                     >
-                        <i class="fas fa-plus mr-1"></i>
+                        <i class="fas fa-plus me-1"></i>
                         Registrar lectura
                     </a>
 
@@ -130,28 +128,25 @@
 
                     <div class="col-12 col-md-6 col-lg-5">
 
-                        <div class="input-group">
+                        <div class="d-flex flex-column flex-sm-row gap-2">
 
                             <input
                                 type="text"
                                 name="q"
                                 class="form-control"
                                 placeholder="Buscar por número de contador"
+                                aria-label="Número de contador"
                                 value="{{ $busqueda ?? '' }}"
                                 autocomplete="off"
                             >
 
-                            <div class="input-group-append">
-
-                                <button
-                                    class="btn btn-secondary"
-                                    type="submit"
-                                >
-                                    <i class="fas fa-search mr-1"></i>
-                                    Buscar
-                                </button>
-
-                            </div>
+                            <button
+                                class="btn btn-secondary text-nowrap"
+                                type="submit"
+                            >
+                                <i class="fas fa-search me-1"></i>
+                                Buscar
+                            </button>
 
                         </div>
 
@@ -181,11 +176,12 @@
             {{-- =================================================
                  TABLA
             ================================================== --}}
-            <div class="table-responsive">
+            <p class="small text-muted mb-2" id="lecturas-tabla-ayuda">Deslice la tabla horizontalmente para consultar todos los datos y la opción de imprimir.</p>
+            <div class="table-responsive" tabindex="0" role="region" aria-label="Historial de lecturas" aria-describedby="lecturas-tabla-ayuda">
 
                 <table
                     class="table table-bordered table-striped
-                           table-hover align-middle"
+                           table-hover align-middle lecturas-table"
                 >
 
                     <thead>
@@ -225,8 +221,7 @@
                             <th>Fecha</th>
 
                             <th
-                                class="text-center"
-                                style="min-width: 145px;"
+                                class="text-center lecturas-actions"
                             >
                                 Acciones
                             </th>
@@ -661,7 +656,7 @@
                                             rel="noopener noreferrer"
                                             title="Ver e imprimir recibo"
                                         >
-                                            <i class="fas fa-print mr-1"></i>
+                                            <i class="fas fa-print me-1"></i>
                                             Imprimir
                                         </a>
 
@@ -717,7 +712,7 @@
             @if ($lecturas->hasPages())
 
                 <div class="mt-3">
-                    {{ $lecturas->withQueryString()->links() }}
+                    {{ $lecturas->withQueryString()->links('pagination::bootstrap-5') }}
                 </div>
 
             @endif

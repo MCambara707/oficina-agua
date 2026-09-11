@@ -10,6 +10,104 @@
 @import 'overlayscrollbars/overlayscrollbars.css';
 @import 'admin-lte/dist/css/adminlte.css';
 
+/* AQ-61: shared spacing for the existing Blade forms (Bootstrap 5 no longer
+ * styles form-group), and containment for long labels and responsive tables. */
+.app-main,
+.app-main .card,
+.app-main .card-body,
+.app-main .form-control,
+.app-main .form-select {
+    min-width: 0;
+}
+
+.app-main .form-group {
+    margin-bottom: 1rem;
+}
+
+.app-main .form-group:not(.form-check) > label {
+    margin-bottom: .375rem;
+}
+
+.app-main .form-text {
+    display: block;
+}
+
+.app-main .alert,
+.app-main .card-header,
+.app-main .app-content-header,
+.app-main dd {
+    overflow-wrap: anywhere;
+}
+
+.app-main .table-responsive {
+    max-width: 100%;
+}
+
+.contador-photo-preview {
+    width: auto;
+    max-width: min(100%, 18.75rem);
+    height: auto;
+}
+
+.lectura-form {
+    max-width: 56rem;
+}
+
+.lecturas-table th,
+.lecturas-table td {
+    vertical-align: middle;
+}
+
+.lecturas-table .lecturas-actions {
+    min-width: 9rem;
+}
+
+/* Keep the AdminLTE header usable when the sidebar is expanded on tablets. */
+.app-header .navbar-nav > .nav-item > .nav-link {
+    white-space: nowrap;
+}
+
+.app-header .user-menu > .nav-link {
+    display: flex;
+    align-items: center;
+}
+
+.app-header .user-menu > .nav-link > span {
+    max-width: 12rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+@media (max-width: 1199.98px) {
+    .app-header .user-menu > .nav-link > span,
+    .app-header .adminlte-search-trigger > span,
+    .app-header .adminlte-search-trigger > kbd {
+        display: none !important;
+    }
+}
+
+@media (max-width: 1024px), (pointer: coarse) {
+    /* 44px touch targets and 16px text avoid cramped controls and input zoom. */
+    .app-main .form-control,
+    .app-main .form-select,
+    .app-main .btn,
+    .app-main .page-link {
+        min-height: 2.75rem;
+        font-size: 1rem;
+    }
+
+    .app-main .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        white-space: normal;
+    }
+
+    .app-main .page-link {
+        min-width: 2.75rem;
+    }
+}
+
 /*
  * Option B: compile from source to customise SCSS variables. Comment out
  * the admin-lte CSS import above and use this instead (requires `sass`):

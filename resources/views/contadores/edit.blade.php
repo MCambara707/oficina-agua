@@ -236,8 +236,8 @@
                             <img
                                 src="{{ asset('storage/' . $contador->foto_ruta) }}"
                                 alt="Fotografía del contador"
-                                class="img-thumbnail"
-                                style="max-width: 250px; max-height: 200px;"
+                                class="img-thumbnail img-fluid contador-photo-preview"
+                                style="max-height: 200px;"
                             >
                         @else
                             <p class="text-muted mb-0">
@@ -288,19 +288,21 @@
                     </label>
                 </div>
 
-                <button
-                    type="submit"
-                    class="btn btn-primary"
-                >
-                    Actualizar
-                </button>
+                <div class="d-flex flex-column flex-sm-row flex-wrap gap-2">
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Actualizar
+                    </button>
 
-                <a
-                    href="{{ route('contadores.index') }}"
-                    class="btn btn-secondary"
-                >
-                    Cancelar
-                </a>
+                    <a
+                        href="{{ route('contadores.index') }}"
+                        class="btn btn-secondary"
+                    >
+                        Cancelar
+                    </a>
+                </div>
             </form>
 
         </div>

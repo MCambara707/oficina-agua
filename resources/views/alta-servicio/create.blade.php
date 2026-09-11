@@ -28,17 +28,16 @@
             class="alert alert-danger alert-dismissible fade show"
             role="alert"
         >
-            <i class="fas fa-exclamation-circle mr-1"></i>
+            <i class="fas fa-exclamation-circle me-1"></i>
 
             {{ session('error') }}
 
             <button
                 type="button"
-                class="close"
-                data-dismiss="alert"
+                class="btn-close"
+                data-bs-dismiss="alert"
                 aria-label="Cerrar"
             >
-                <span aria-hidden="true">&times;</span>
             </button>
         </div>
 
@@ -52,7 +51,7 @@
             role="alert"
         >
             <strong>
-                <i class="fas fa-exclamation-triangle mr-1"></i>
+                <i class="fas fa-exclamation-triangle me-1"></i>
                 No fue posible registrar el alta.
             </strong>
 
@@ -70,11 +69,10 @@
 
             <button
                 type="button"
-                class="close"
-                data-dismiss="alert"
+                class="btn-close"
+                data-bs-dismiss="alert"
                 aria-label="Cerrar"
             >
-                <span aria-hidden="true">&times;</span>
             </button>
         </div>
 
@@ -89,7 +87,7 @@
 
         <div class="alert alert-warning">
 
-            <i class="fas fa-exclamation-triangle mr-1"></i>
+            <i class="fas fa-exclamation-triangle me-1"></i>
 
             No existen tarifas activas.
 
@@ -105,7 +103,7 @@
 
         <div class="alert alert-info">
 
-            <i class="fas fa-info-circle mr-1"></i>
+            <i class="fas fa-info-circle me-1"></i>
 
             No existen servicios activos actualmente.
 
@@ -137,7 +135,7 @@
 
                 <h3 class="card-title mb-0">
 
-                    <i class="fas fa-user mr-1"></i>
+                    <i class="fas fa-user me-1"></i>
 
                     1. Cliente
 
@@ -163,14 +161,14 @@
                     </label>
 
 
-                    <div class="custom-control custom-radio custom-control-inline">
+                    <div class="form-check form-check-inline">
 
                         <input
                             type="radio"
                             id="tipo_cliente_existente"
                             name="tipo_cliente"
                             value="existente"
-                            class="custom-control-input"
+                            class="form-check-input"
                             @checked(
                                 old(
                                     'tipo_cliente',
@@ -182,7 +180,7 @@
                         >
 
                         <label
-                            class="custom-control-label"
+                            class="form-check-label"
                             for="tipo_cliente_existente"
                         >
                             Cliente existente
@@ -191,14 +189,14 @@
                     </div>
 
 
-                    <div class="custom-control custom-radio custom-control-inline">
+                    <div class="form-check form-check-inline">
 
                         <input
                             type="radio"
                             id="tipo_cliente_nuevo"
                             name="tipo_cliente"
                             value="nuevo"
-                            class="custom-control-input"
+                            class="form-check-input"
                             @checked(
                                 old(
                                     'tipo_cliente',
@@ -210,7 +208,7 @@
                         >
 
                         <label
-                            class="custom-control-label"
+                            class="form-check-label"
                             for="tipo_cliente_nuevo"
                         >
                             Cliente nuevo
@@ -326,7 +324,7 @@
 
                     <div class="alert alert-light border">
 
-                        <i class="fas fa-info-circle mr-1"></i>
+                        <i class="fas fa-info-circle me-1"></i>
 
                         El DPI no puede estar registrado previamente.
                         Si ya existe, utilice la opción
@@ -502,7 +500,7 @@
 
                 <h3 class="card-title mb-0">
 
-                    <i class="fas fa-tint mr-1"></i>
+                    <i class="fas fa-tint me-1"></i>
 
                     2. Servicio y tarifa
 
@@ -672,7 +670,7 @@
 
                 <h3 class="card-title mb-0">
 
-                    <i class="fas fa-tachometer-alt mr-1"></i>
+                    <i class="fas fa-tachometer-alt me-1"></i>
 
                     3. Contador y ubicación
 
@@ -892,9 +890,8 @@
                         id="vistaPrevia"
                         src=""
                         alt="Vista previa de la fotografía"
-                        class="img-thumbnail"
+                        class="img-thumbnail img-fluid contador-photo-preview"
                         style="
-                            max-width: 300px;
                             max-height: 230px;
                             object-fit: cover;
                         "
@@ -919,7 +916,7 @@
 
                     <div class="font-weight-bold mb-2">
 
-                        <i class="fas fa-info-circle mr-1"></i>
+                        <i class="fas fa-info-circle me-1"></i>
 
                         Al confirmar esta operación:
 
@@ -935,15 +932,15 @@
 
 
                 <div
-                    class="d-flex flex-column flex-sm-row
+                    class="d-flex flex-column flex-sm-row flex-wrap gap-2
                            justify-content-between"
                 >
 
                     <a
                         href="{{ route('contadores.index') }}"
-                        class="btn btn-secondary mb-2 mb-sm-0"
+                        class="btn btn-secondary"
                     >
-                        <i class="fas fa-arrow-left mr-1"></i>
+                        <i class="fas fa-arrow-left me-1"></i>
                         Cancelar
                     </a>
 
@@ -954,7 +951,7 @@
                         id="btnRegistrarAlta"
                         @disabled($tarifas->isEmpty())
                     >
-                        <i class="fas fa-check-circle mr-1"></i>
+                        <i class="fas fa-check-circle me-1"></i>
 
                         Registrar alta
                     </button>
@@ -1209,7 +1206,7 @@
                             true;
 
                         botonRegistrar.innerHTML =
-                            '<i class="fas fa-spinner fa-spin mr-1"></i>'
+                            '<i class="fas fa-spinner fa-spin me-1"></i>'
                             + ' Registrando...';
                     }
                 );

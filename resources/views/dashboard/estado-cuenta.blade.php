@@ -29,19 +29,16 @@
             class="alert alert-success alert-dismissible fade show"
             role="alert"
         >
-            <i class="fas fa-check-circle mr-1"></i>
+            <i class="fas fa-check-circle me-1"></i>
 
             {{ session('exito') }}
 
             <button
                 type="button"
-                class="close"
-                data-dismiss="alert"
+                class="btn-close"
+                data-bs-dismiss="alert"
                 aria-label="Cerrar"
             >
-                <span aria-hidden="true">
-                    &times;
-                </span>
             </button>
 
         </div>
@@ -55,19 +52,16 @@
             class="alert alert-danger alert-dismissible fade show"
             role="alert"
         >
-            <i class="fas fa-exclamation-circle mr-1"></i>
+            <i class="fas fa-exclamation-circle me-1"></i>
 
             {{ session('error') }}
 
             <button
                 type="button"
-                class="close"
-                data-dismiss="alert"
+                class="btn-close"
+                data-bs-dismiss="alert"
                 aria-label="Cerrar"
             >
-                <span aria-hidden="true">
-                    &times;
-                </span>
             </button>
 
         </div>
@@ -85,7 +79,7 @@
 
             <h3 class="card-title mb-0">
 
-                <i class="fas fa-filter mr-1"></i>
+                <i class="fas fa-filter me-1"></i>
 
                 Filtros
 
@@ -186,7 +180,7 @@
                                 type="submit"
                                 class="btn btn-primary w-100"
                             >
-                                <i class="fas fa-search mr-1"></i>
+                                <i class="fas fa-search me-1"></i>
 
                                 Buscar
                             </button>
@@ -206,7 +200,7 @@
                             href="{{ route('dashboard.estado-cuenta') }}"
                             class="btn btn-outline-secondary btn-sm"
                         >
-                            <i class="fas fa-times mr-1"></i>
+                            <i class="fas fa-times me-1"></i>
 
                             Limpiar filtros
                         </a>
@@ -343,7 +337,7 @@
         <div
             class="card-body
                    d-flex flex-column flex-md-row
-                   justify-content-between align-items-md-center"
+                   flex-wrap gap-2 justify-content-between align-items-md-center"
         >
 
             <div>
@@ -366,7 +360,7 @@
 
             <div class="mt-3 mt-md-0 text-muted">
 
-                <i class="fas fa-info-circle mr-1"></i>
+                <i class="fas fa-info-circle me-1"></i>
 
                 Incluye mora vigente cuando corresponde.
 
@@ -387,7 +381,7 @@
 
             <h3 class="card-title mb-0">
 
-                <i class="fas fa-file-invoice-dollar mr-1"></i>
+                <i class="fas fa-file-invoice-dollar me-1"></i>
 
                 Estado de cuenta por cliente
 
@@ -487,7 +481,7 @@
 
                                         <small class="text-muted">
 
-                                            <i class="fas fa-phone mr-1"></i>
+                                            <i class="fas fa-phone me-1"></i>
 
                                             {{ $cliente->telefono }}
 
@@ -524,7 +518,7 @@
                                                 @if ($contador->activo)
 
                                                     <span
-                                                        class="badge badge-success ml-1"
+                                                        class="badge badge-success ms-1"
                                                     >
                                                         Activo
                                                     </span>
@@ -532,7 +526,7 @@
                                                 @else
 
                                                     <span
-                                                        class="badge badge-secondary ml-1"
+                                                        class="badge badge-secondary ms-1"
                                                     >
                                                         Inactivo
                                                     </span>
@@ -592,7 +586,7 @@
                                         <span class="badge badge-success">
 
                                             <i
-                                                class="fas fa-check-circle mr-1"
+                                                class="fas fa-check-circle me-1"
                                             ></i>
 
                                             Al día
@@ -608,7 +602,7 @@
                                         <span class="badge badge-warning">
 
                                             <i
-                                                class="fas fa-clock mr-1"
+                                                class="fas fa-clock me-1"
                                             ></i>
 
                                             Pendiente
@@ -621,7 +615,7 @@
                                         <span class="badge badge-danger">
 
                                             <i
-                                                class="fas fa-exclamation-triangle mr-1"
+                                                class="fas fa-exclamation-triangle me-1"
                                             ></i>
 
                                             Con mora
@@ -705,7 +699,7 @@
 
                                     <div
                                         class="d-flex flex-column
-                                               justify-content-center"
+                                               gap-2 justify-content-center"
                                     >
 
                                         @if (
@@ -722,11 +716,10 @@
                                                             ?: $cliente->nombre,
                                                     ]
                                                 ) }}"
-                                                class="btn btn-sm
-                                                       btn-success mb-1"
+                                                class="btn btn-sm btn-success"
                                             >
                                                 <i
-                                                    class="fas fa-cash-register mr-1"
+                                                    class="fas fa-cash-register me-1"
                                                 ></i>
 
                                                 Ver deuda
@@ -748,7 +741,7 @@
                                                        btn-outline-primary"
                                             >
                                                 <i
-                                                    class="fas fa-print mr-1"
+                                                    class="fas fa-print me-1"
                                                 ></i>
 
                                                 Último recibo

@@ -23,16 +23,15 @@
             class="alert alert-success alert-dismissible fade show"
             role="alert"
         >
-            <i class="fas fa-check-circle mr-1"></i>
+            <i class="fas fa-check-circle me-1"></i>
             {{ session('exito') }}
 
             <button
                 type="button"
-                class="close"
-                data-dismiss="alert"
+                class="btn-close"
+                data-bs-dismiss="alert"
                 aria-label="Cerrar"
             >
-                <span aria-hidden="true">&times;</span>
             </button>
         </div>
     @endif
@@ -43,16 +42,15 @@
             class="alert alert-info alert-dismissible fade show"
             role="alert"
         >
-            <i class="fas fa-info-circle mr-1"></i>
+            <i class="fas fa-info-circle me-1"></i>
             {{ session('info') }}
 
             <button
                 type="button"
-                class="close"
-                data-dismiss="alert"
+                class="btn-close"
+                data-bs-dismiss="alert"
                 aria-label="Cerrar"
             >
-                <span aria-hidden="true">&times;</span>
             </button>
         </div>
     @endif
@@ -63,16 +61,15 @@
             class="alert alert-danger alert-dismissible fade show"
             role="alert"
         >
-            <i class="fas fa-exclamation-circle mr-1"></i>
+            <i class="fas fa-exclamation-circle me-1"></i>
             {{ session('error') }}
 
             <button
                 type="button"
-                class="close"
-                data-dismiss="alert"
+                class="btn-close"
+                data-bs-dismiss="alert"
                 aria-label="Cerrar"
             >
-                <span aria-hidden="true">&times;</span>
             </button>
         </div>
     @endif
@@ -87,7 +84,7 @@
 
             <div
                 class="d-flex flex-column flex-md-row
-                       justify-content-between align-items-md-center"
+                       flex-wrap gap-2 justify-content-between align-items-md-center"
             >
                 <div>
                     <h3 class="card-title mb-1">
@@ -124,7 +121,7 @@
                             Buscar recibo
                         </label>
 
-                        <div class="input-group">
+                        <div class="d-flex flex-column flex-sm-row gap-2">
 
                             <input
                                 type="text"
@@ -136,17 +133,13 @@
                                 autocomplete="off"
                             >
 
-                            <div class="input-group-append">
-
-                                <button
-                                    type="submit"
-                                    class="btn btn-primary"
-                                >
-                                    <i class="fas fa-search mr-1"></i>
-                                    Buscar
-                                </button>
-
-                            </div>
+                            <button
+                                type="submit"
+                                class="btn btn-primary text-nowrap"
+                            >
+                                <i class="fas fa-search me-1"></i>
+                                Buscar
+                            </button>
 
                         </div>
 
@@ -164,7 +157,7 @@
                                 href="{{ route('pagos.index') }}"
                                 class="btn btn-outline-secondary"
                             >
-                                <i class="fas fa-times mr-1"></i>
+                                <i class="fas fa-times me-1"></i>
                                 Limpiar
                             </a>
 
@@ -398,7 +391,7 @@
                                     <div
                                         class="d-flex flex-column
                                                flex-sm-row
-                                               justify-content-center"
+                                               flex-wrap gap-2 justify-content-center"
                                     >
 
                                         <a
@@ -406,14 +399,12 @@
                                                 'recibos.imprimir',
                                                 $recibo
                                             ) }}"
-                                            class="btn btn-sm
-                                                   btn-outline-primary
-                                                   mb-1 mb-sm-0 mr-sm-1"
+                                            class="btn btn-sm btn-outline-primary"
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             title="Ver o imprimir recibo"
                                         >
-                                            <i class="fas fa-print mr-1"></i>
+                                            <i class="fas fa-print me-1"></i>
                                             Recibo
                                         </a>
 
@@ -426,7 +417,7 @@
                                             class="btn btn-sm btn-success"
                                             title="Registrar pago"
                                         >
-                                            <i class="fas fa-cash-register mr-1"></i>
+                                            <i class="fas fa-cash-register me-1"></i>
                                             Pagar
                                         </a>
 
@@ -477,7 +468,7 @@
 
                 <div class="mt-3">
 
-                    {{ $recibos->withQueryString()->links() }}
+                    {{ $recibos->withQueryString()->links('pagination::bootstrap-5') }}
 
                 </div>
 

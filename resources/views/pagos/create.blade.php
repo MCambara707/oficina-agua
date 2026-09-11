@@ -62,7 +62,7 @@
                 <div class="alert alert-warning">
 
                     <strong>
-                        <i class="fas fa-exclamation-triangle mr-1"></i>
+                        <i class="fas fa-exclamation-triangle me-1"></i>
                         Recibo con mora
                     </strong>
 
@@ -83,7 +83,7 @@
 
                 <div class="alert alert-success">
 
-                    <i class="fas fa-check-circle mr-1"></i>
+                    <i class="fas fa-check-circle me-1"></i>
 
                     El recibo se encuentra dentro del período de pago
                     y no tiene mora.
@@ -481,15 +481,15 @@
                      ACCIONES
                 ================================================== --}}
                 <div
-                    class="d-flex flex-column flex-sm-row
+                    class="d-flex flex-column flex-sm-row flex-wrap gap-2
                            justify-content-between mt-4"
                 >
 
                     <a
                         href="{{ route('pagos.index') }}"
-                        class="btn btn-secondary mb-2 mb-sm-0"
+                        class="btn btn-secondary"
                     >
-                        <i class="fas fa-arrow-left mr-1"></i>
+                        <i class="fas fa-arrow-left me-1"></i>
                         Cancelar
                     </a>
 
@@ -507,7 +507,7 @@
                             );
                         "
                     >
-                        <i class="fas fa-cash-register mr-1"></i>
+                        <i class="fas fa-cash-register me-1"></i>
                         Confirmar pago
                     </button>
 

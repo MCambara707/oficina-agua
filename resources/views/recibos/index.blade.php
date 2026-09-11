@@ -26,17 +26,17 @@
     <div class="card">
         <div class="card-body">
             <form action="{{ route('recibos.index') }}" method="GET" class="mb-4">
-                <div class="row align-items-end">
-                    <div class="col-md-5 form-group">
+                <div class="row align-items-end g-3">
+                    <div class="col-12 col-xl-5">
                         <label for="q">Recibo, DPI, nombre o contador</label>
                         <input id="q" name="q" class="form-control" maxlength="150"
                                value="{{ $busqueda }}" placeholder="Buscar en todos los recibos">
                     </div>
-                    <div class="col-md-2 form-group">
+                    <div class="col-12 col-sm-6 col-xl-2">
                         <label for="periodo">Período de lectura</label>
                         <input type="month" id="periodo" name="periodo" class="form-control" value="{{ $periodo }}">
                     </div>
-                    <div class="col-md-2 form-group">
+                    <div class="col-12 col-sm-6 col-xl-2">
                         <label for="estado">Estado</label>
                         <select id="estado" name="estado" class="form-control">
                             <option value="">Todos</option>
@@ -45,7 +45,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-md-3 form-group">
+                    <div class="col-12 col-xl-3 d-flex flex-wrap gap-2">
                         <button class="btn btn-primary" type="submit">Buscar</button>
                         <a href="{{ route('recibos.index') }}" class="btn btn-secondary">Limpiar</a>
                     </div>
@@ -102,7 +102,7 @@
                     </tbody>
                 </table>
             </div>
-            {{ $recibos->links() }}
+            {{ $recibos->links('pagination::bootstrap-5') }}
         </div>
     </div>
 @stop
