@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contador;
+use App\Models\Recibo;
 use App\Models\Tarifa;
+use App\Services\Auditoria;
 use Carbon\Carbon;
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -11,40 +15,22 @@ use Illuminate\Validation\ValidationException;
 
 class TarifaController extends Controller
 {
-    /**
-     * Regla del sistema:
-     * 1 paja equivale a 60 m³ de capacidad mensual.
-     */
     private const CAPACIDAD_POR_PAJA = 60;
 
-    private const TIPOS_BASE = [
-        '1/2 paja',
-        '1 paja',
-        '2 pajas',
+    private const TIPOS_BASE = ['1/2 paja', '1 paja', '2 pajas'];
+
+    private const CAMPOS_HISTORICOS = [
+        'nombre', 'tipo', 'capacidad', 'precio_por_m3', 'precio_exceso_m3',
+        'mora_porcentaje', 'mora_monto_fijo', 'vigente_desde',
     ];
 
     public function index(Request $request)
     {
         $busqueda = $request->input('q');
+        $tarifas = Tarifa::when($busqueda, fn ($query, $valor) => $query->where('nombre', 'like', "%{$valor}%"))
+            ->orderByDesc('vigente_desde')->paginate(10)->withQueryString();
 
-        $tarifas = Tarifa::when(
-            $busqueda,
-            function ($query, $busqueda) {
-                return $query->where(
-                    'nombre',
-                    'like',
-                    "%{$busqueda}%"
-                );
-            }
-        )
-            ->orderBy('vigente_desde', 'desc')
-            ->paginate(10)
-            ->withQueryString();
-
-        return view(
-            'tarifas.index',
-            compact('tarifas', 'busqueda')
-        );
+        return view('tarifas.index', compact('tarifas', 'busqueda'));
     }
 
     public function create()
@@ -54,219 +40,159 @@ class TarifaController extends Controller
 
     public function store(Request $request)
     {
-        $datos = $this->validarTarifa($request);
-
-        /*
-         * Se resuelve el texto que se guardará como tipo.
-         */
-        $datos['tipo'] = $this->resolverTipo(
-            $datos['tipo_selector'],
-            $datos['cantidad_pajas'] ?? null
-        );
-
-        /*
-         * La capacidad NO se recibe del formulario.
-         *
-         * Se calcula siempre en el servidor según
-         * el tipo de paja seleccionado.
-         */
-        $datos['capacidad'] = $this->resolverCapacidad(
-            $datos['tipo_selector'],
-            $datos['cantidad_pajas'] ?? null
-        );
-
-        unset(
-            $datos['tipo_selector'],
-            $datos['cantidad_pajas']
-        );
-
-        $datos['activo'] = $request->has('activo')
-            ? 1
-            : 0;
-
-        /*
-         * Evita dos tarifas activas del mismo tipo
-         * con exactamente la misma fecha de inicio.
-         */
-        if ($datos['activo']) {
-            $existeMismaFecha = Tarifa::where(
-                    'tipo',
-                    $datos['tipo']
-                )
-                ->where('activo', true)
-                ->whereDate(
-                    'vigente_desde',
-                    $datos['vigente_desde']
-                )
-                ->exists();
-
-            if ($existeMismaFecha) {
-                return back()
-                    ->withInput()
-                    ->withErrors([
-                        'vigente_desde' =>
-                            'Ya existe una tarifa activa de este tipo con la misma fecha de inicio.',
-                    ]);
-            }
-        }
+        $datos = $this->datosTarifa($request);
 
         DB::transaction(function () use ($datos) {
-            /*
-             * AQ-29:
-             *
-             * Cuando empieza una nueva tarifa activa
-             * del mismo tipo, la tarifa anterior
-             * termina un día antes.
-             */
+            Auditoria::establecerUsuario();
             if ($datos['activo']) {
-                $fechaCierre = Carbon::parse(
-                    $datos['vigente_desde']
-                )
-                    ->subDay()
-                    ->toDateString();
+                // Bloquea las tarifas que podrán cerrarse mientras se genera un recibo.
+                $anteriores = Tarifa::where('tipo', $datos['tipo'])
+                    ->where('activo', true)->orderBy('id')->lockForUpdate()->get();
+                $fechaCierre = Carbon::parse($datos['vigente_desde'])->subDay()->toDateString();
 
-                Tarifa::where(
-                        'tipo',
-                        $datos['tipo']
-                    )
-                    ->where('activo', true)
-                    ->where(
-                        'vigente_desde',
-                        '<',
-                        $datos['vigente_desde']
-                    )
-                    ->where(
-                        function ($query) use ($datos) {
-                            $query
-                                ->whereNull('vigente_hasta')
-                                ->orWhere(
-                                    'vigente_hasta',
-                                    '>=',
-                                    $datos['vigente_desde']
-                                );
+                foreach ($anteriores as $anterior) {
+                    $inicio = $anterior->vigente_desde->toDateString();
+                    $fin = $anterior->vigente_hasta?->toDateString();
+
+                    if ($inicio === $datos['vigente_desde']) {
+                        throw ValidationException::withMessages([
+                            'vigente_desde' => 'Ya existe una tarifa activa de este tipo con la misma fecha de inicio.',
+                        ]);
+                    }
+
+                    if ($inicio > $datos['vigente_desde']) {
+                        if (empty($datos['vigente_hasta']) || $datos['vigente_hasta'] >= $inicio) {
+                            throw ValidationException::withMessages([
+                                'vigente_hasta' => 'La vigencia se superpone con una tarifa posterior. Indique una fecha final anterior a su inicio.',
+                            ]);
                         }
-                    )
-                    ->update([
-                        'vigente_hasta' => $fechaCierre,
-                    ]);
+                        continue;
+                    }
+
+                    if ($fin === null || $fin >= $datos['vigente_desde']) {
+                        if (Recibo::where('tarifa_id', $anterior->id)
+                            ->whereDate('fecha_emision', '>', $fechaCierre)->exists()) {
+                            throw ValidationException::withMessages([
+                                'vigente_desde' => 'Esta fecha dejaría fuera de vigencia recibos ya emitidos. Use una fecha posterior al último recibo de la tarifa anterior.',
+                            ]);
+                        }
+                        $anterior->update(['vigente_hasta' => $fechaCierre]);
+                    }
+                }
             }
 
             Tarifa::create($datos);
-        });
+        }, 3);
 
-        return redirect()
-            ->route('tarifas.index')
-            ->with(
-                'exito',
-                'Tarifa creada correctamente.'
-            );
+        return redirect()->route('tarifas.index')->with('exito', 'Tarifa creada correctamente.');
     }
 
     public function edit(Tarifa $tarifa)
     {
-        return view(
-            'tarifas.edit',
-            compact('tarifa')
-        );
+        $tieneRecibos = Recibo::where('tarifa_id', $tarifa->id)->exists();
+        $tieneContadores = Contador::where('tarifa_id', $tarifa->id)->exists();
+
+        return view('tarifas.edit', compact('tarifa', 'tieneRecibos', 'tieneContadores'));
     }
 
-    public function update(
-        Request $request,
-        Tarifa $tarifa
-    ) {
-        $datos = $this->validarTarifa($request);
+    public function update(Request $request, Tarifa $tarifa)
+    {
+        $datos = $this->datosTarifa($request);
 
-        /*
-         * Se vuelve a determinar el tipo.
-         */
-        $datos['tipo'] = $this->resolverTipo(
-            $datos['tipo_selector'],
-            $datos['cantidad_pajas'] ?? null
-        );
-
-        /*
-         * También se vuelve a calcular automáticamente
-         * la capacidad.
-         *
-         * Si cambia de 1 paja a 2 pajas, por ejemplo:
-         *
-         * 60 m³ → 120 m³
-         */
-        $datos['capacidad'] = $this->resolverCapacidad(
-            $datos['tipo_selector'],
-            $datos['cantidad_pajas'] ?? null
-        );
-
-        unset(
-            $datos['tipo_selector'],
-            $datos['cantidad_pajas']
-        );
-
-        $datos['activo'] = $request->has('activo')
-            ? 1
-            : 0;
-
-        if ($datos['activo']) {
-            $existeMismaFecha = Tarifa::where(
-                    'tipo',
-                    $datos['tipo']
-                )
-                ->where('activo', true)
-                ->whereDate(
-                    'vigente_desde',
-                    $datos['vigente_desde']
-                )
-                ->where(
-                    'id',
-                    '<>',
-                    $tarifa->id
-                )
-                ->exists();
-
-            if ($existeMismaFecha) {
-                return back()
-                    ->withInput()
-                    ->withErrors([
-                        'vigente_desde' =>
-                            'Ya existe otra tarifa activa de este tipo con la misma fecha de inicio.',
-                    ]);
+        DB::transaction(function () use ($datos, $tarifa) {
+            Auditoria::establecerUsuario();
+            // La emisión de recibos toma el mismo bloqueo antes de usar esta tarifa.
+            $actual = Tarifa::whereKey($tarifa->id)->lockForUpdate()->firstOrFail();
+            $tieneRecibos = Recibo::where('tarifa_id', $actual->id)->exists();
+            if ($tieneRecibos && $datos['tipo'] === $actual->tipo) {
+                // Una capacidad histórica importada puede diferir de la fórmula actual.
+                // No se recibe del formulario y debe conservarse al cerrar o desactivar.
+                $datos['capacidad'] = $actual->capacidad;
             }
-        }
+            $candidata = clone $actual;
+            $candidata->fill($datos);
 
-        $tarifa->update($datos);
+            if ($candidata->isDirty('tipo') && Contador::where('tarifa_id', $actual->id)->exists()) {
+                throw ValidationException::withMessages([
+                    'tipo_selector' => 'No puede cambiar el tipo de una tarifa asignada a contadores. Cree una nueva tarifa para el tipo correspondiente.',
+                ]);
+            }
 
-        return redirect()
-            ->route('tarifas.index')
-            ->with(
-                'exito',
-                'Tarifa actualizada correctamente.'
-            );
+            if ($tieneRecibos && $candidata->isDirty(self::CAMPOS_HISTORICOS)) {
+                throw ValidationException::withMessages([
+                    'tarifa' => 'Esta tarifa ya fue utilizada en recibos. Su nombre, tipo, capacidad, precios, mora y fecha inicial son históricos: cree una nueva tarifa para cambiarlos.',
+                ]);
+            }
+
+            if ($tieneRecibos && !empty($datos['vigente_hasta']) &&
+                Recibo::where('tarifa_id', $actual->id)
+                    ->whereDate('fecha_emision', '>', $datos['vigente_hasta'])->exists()) {
+                throw ValidationException::withMessages([
+                    'vigente_hasta' => 'La fecha final no puede dejar fuera de vigencia recibos ya emitidos con esta tarifa.',
+                ]);
+            }
+
+            if ($datos['activo'] && $candidata->isDirty(['tipo', 'activo', 'vigente_desde', 'vigente_hasta'])) {
+                $superpuesta = Tarifa::where('tipo', $datos['tipo'])->where('activo', true)
+                    ->where('id', '<>', $actual->id)
+                    ->where(function ($query) use ($datos) {
+                        $query->whereNull('vigente_hasta')->orWhere('vigente_hasta', '>=', $datos['vigente_desde']);
+                    })
+                    ->when(!empty($datos['vigente_hasta']), fn ($query) => $query->where('vigente_desde', '<=', $datos['vigente_hasta']))
+                    ->lockForUpdate()->first();
+
+                if ($superpuesta) {
+                    throw ValidationException::withMessages([
+                        'vigente_desde' => 'La vigencia se superpone con otra tarifa activa del mismo tipo. Revise las fechas o desactive la tarifa correspondiente.',
+                    ]);
+                }
+            }
+
+            $actual->update($datos);
+        }, 3);
+
+        return redirect()->route('tarifas.index')->with('exito', 'Tarifa actualizada correctamente.');
     }
 
     public function destroy(Tarifa $tarifa)
     {
         try {
-            $tarifa->delete();
+            $eliminada = DB::transaction(function () use ($tarifa) {
+                Auditoria::establecerUsuario();
+                $actual = Tarifa::whereKey($tarifa->id)->lockForUpdate()->firstOrFail();
+                if (Contador::where('tarifa_id', $actual->id)->exists() ||
+                    Recibo::where('tarifa_id', $actual->id)->exists()) {
+                    return false;
+                }
 
-            return redirect()
-                ->route('tarifas.index')
-                ->with(
-                    'exito',
-                    'Tarifa eliminada correctamente.'
-                );
-        } catch (\Illuminate\Database\QueryException $e) {
-            return redirect()
-                ->route('tarifas.index')
-                ->with(
-                    'error',
-                    'No se puede eliminar: la tarifa está en uso. Desactívala en su lugar.'
-                );
+                return $actual->delete();
+            }, 3);
+
+            return redirect()->route('tarifas.index')->with(
+                $eliminada ? 'exito' : 'error',
+                $eliminada ? 'Tarifa eliminada correctamente.' : 'No se puede eliminar: la tarifa está en uso. Desactívala en su lugar.'
+            );
+        } catch (QueryException $e) {
+            report($e);
+            return redirect()->route('tarifas.index')
+                ->with('error', 'No se pudo eliminar la tarifa. Si está en uso, desactívala en su lugar.');
         }
     }
 
-    /**
-     * Validaciones del mantenimiento de tarifas.
-     */
+    private function datosTarifa(Request $request): array
+    {
+        $datos = $this->validarTarifa($request);
+        $datos['tipo'] = $this->resolverTipo($datos['tipo_selector'], $datos['cantidad_pajas'] ?? null);
+        $datos['capacidad'] = $this->resolverCapacidad($datos['tipo_selector'], $datos['cantidad_pajas'] ?? null);
+        $datos['activo'] = $request->boolean('activo');
+        $datos['vigente_desde'] = Carbon::parse($datos['vigente_desde'])->toDateString();
+        $datos['vigente_hasta'] = empty($datos['vigente_hasta']) ? null : Carbon::parse($datos['vigente_hasta'])->toDateString();
+        $datos['mora_porcentaje'] = $datos['mora_porcentaje'] ?? null;
+        $datos['mora_monto_fijo'] = $datos['mora_monto_fijo'] ?? null;
+        unset($datos['tipo_selector'], $datos['cantidad_pajas']);
+
+        return $datos;
+    }
     private function validarTarifa(
         Request $request
     ): array {

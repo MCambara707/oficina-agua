@@ -37,6 +37,7 @@
                     <thead>
                         <tr>
                             <th>N° Registro</th>
+                            <th>Lectura inicial</th>
                             <th>Cliente</th>
                             <th>Tarifa</th>
                             <th>Servicio</th>
@@ -52,6 +53,13 @@
                         @forelse ($contadores as $contador)
                             <tr>
                                 <td>{{ $contador->numero_registro }}</td>
+                                <td>
+                                    @if ($contador->lectura_inicial === null)
+                                        <span class="text-muted">Sin establecer</span>
+                                    @else
+                                        {{ number_format((float) $contador->lectura_inicial, 3) }} m³
+                                    @endif
+                                </td>
                                 <td>{{ $contador->cliente->nombre }}</td>
                                 <td>
                                     @if ($contador->tarifa)
@@ -104,7 +112,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="text-center py-4">
+                                <td colspan="11" class="text-center py-4">
                                     No hay contadores registrados todavía.
                                 </td>
                             </tr>

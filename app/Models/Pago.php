@@ -5,19 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 
 
-/**
- * AQ-33 — Idempotencia en pagos.
- *
- * La tabla `pagos` tiene una restricción UNIQUE sobre `recibo_id`
- * (uq_pagos_recibo_id), lo que impide registrar dos pagos para el
- * mismo recibo a nivel de base de datos. Con eso queda cubierta la
- * idempotencia para este sprint, ya que el módulo de pagos no es
- * funcional todavía (ver AQ-32).
- *
- * Cuando el pago real se active (si el proyecto continúa), agregar
- * también la validación a nivel de formulario/API para dar un
- * mensaje amigable en vez de dejar que falle la constraint.
- */
+/** Un recibo admite un pago; UNIQUE(recibo_id) refuerza el bloqueo transaccional del cobro. */
 class Pago extends Model
 {
     protected $table = 'pagos';

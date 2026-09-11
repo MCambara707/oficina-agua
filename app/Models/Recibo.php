@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Services\Redondeo;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 
 class Recibo extends Model
@@ -84,10 +86,10 @@ class Recibo extends Model
      *
      * PAGADO y ANULADO nunca generan mora.
      */
-    public function estaAtrasado(): bool
+    public function estaAtrasado(?CarbonInterface $fecha = null): bool
     {
         return $this->estado === 'PENDIENTE'
-            && now()->greaterThan($this->fechaVencimiento());
+            && ($fecha ?? now())->greaterThan($this->fechaVencimiento());
     }
 
     /**
@@ -96,13 +98,14 @@ class Recibo extends Model
      * Si todavía está dentro del plazo de pago,
      * devuelve cero.
      */
-    public function diasAtraso(): int
+    public function diasAtraso(?CarbonInterface $fecha = null): int
     {
-        if (! $this->estaAtrasado()) {
+        $fecha ??= now();
+        if (! $this->estaAtrasado($fecha)) {
             return 0;
         }
 
-        return (int) $this->fechaVencimiento()->diffInDays(now());
+        return (int) $this->fechaVencimiento()->startOfDay()->diffInDays($fecha->copy()->startOfDay());
     }
 
     /**
@@ -119,9 +122,9 @@ class Recibo extends Model
      * La mora se aplica una sola vez cuando el recibo
      * está vencido. No se incrementa diariamente.
      */
-    public function montoMora(): float
+    public function montoMora(?CarbonInterface $fecha = null): float
     {
-        if (! $this->estaAtrasado() || ! $this->tarifa) {
+        if (! $this->estaAtrasado($fecha) || ! $this->tarifa) {
             return 0.0;
         }
 
@@ -138,10 +141,7 @@ class Recibo extends Model
         $montoPorcentaje = $montoRecibo
             * ($moraPorcentaje / 100);
 
-        return round(
-            $moraFija + $montoPorcentaje,
-            2
-        );
+        return Redondeo::monto($moraFija + $montoPorcentaje);
     }
 
     /**
@@ -153,11 +153,8 @@ class Recibo extends Model
      * Después del vencimiento:
      * monto original + mora.
      */
-    public function montoConMora(): float
+    public function montoConMora(?CarbonInterface $fecha = null): float
     {
-        return round(
-            (float) $this->monto + $this->montoMora(),
-            2
-        );
+        return Redondeo::monto((float) $this->monto + $this->montoMora($fecha));
     }
 }

@@ -1,16 +1,19 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ClienteController;
-use App\Http\Controllers\TarifaController;
-use App\Http\Controllers\ContadorController;
+
+use App\Http\Controllers\AltaServicioController;
 use App\Http\Controllers\AutenticacionController;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\ContadorController;
+use App\Http\Controllers\DashboardEstadoCuentaController;
 use App\Http\Controllers\LecturaController;
 use App\Http\Controllers\PagoController;
-use App\Http\Controllers\DashboardEstadoCuentaController;
 use App\Http\Controllers\ReciboController;
-use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\ServicioController;
+use App\Http\Controllers\TarifaController;
+use App\Http\Controllers\UsuarioController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -23,20 +26,31 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-// AQ-69: página de presentación del equipo, enlazada desde el footer.
+
+// AQ-69:
+// Página de presentación del equipo.
 Route::get('/equipo', function () {
     return view('presentacion');
 })->name('equipo');
 
+
 // Mostrar formulario de inicio de sesión.
-Route::get('/login', [AutenticacionController::class, 'mostrarLogin'])
+Route::get(
+    '/login',
+    [AutenticacionController::class, 'mostrarLogin']
+)
     ->middleware('guest')
     ->name('login');
 
+
 // Procesar inicio de sesión.
-Route::post('/login', [AutenticacionController::class, 'iniciarSesion'])
+Route::post(
+    '/login',
+    [AutenticacionController::class, 'iniciarSesion']
+)
     ->middleware('guest')
     ->name('login.procesar');
+
 
 /*
 |--------------------------------------------------------------------------
@@ -44,11 +58,19 @@ Route::post('/login', [AutenticacionController::class, 'iniciarSesion'])
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'auditoria'])->group(function () {
 
-    // Cerrar sesión.
-    Route::post('/logout', [AutenticacionController::class, 'cerrarSesion'])
-        ->name('logout');
+    /*
+    |--------------------------------------------------------------------------
+    | Sesión
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post(
+        '/logout',
+        [AutenticacionController::class, 'cerrarSesion']
+    )->name('logout');
+
 
     /*
     |--------------------------------------------------------------------------
@@ -56,10 +78,13 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    // Disponible para cualquier usuario autenticado.
+    /*
+     * Disponible para cualquier usuario autenticado.
+     */
     Route::get('/admin-demo', function () {
         return view('admin-demo');
     })->name('admin.demo');
+
 
     /*
     |--------------------------------------------------------------------------
@@ -73,17 +98,24 @@ Route::middleware('auth')->group(function () {
          * AQ-67:
          * Mantenimiento de usuarios.
          *
-         * No existe ruta DELETE porque la baja es lógica.
+         * Los usuarios no se eliminan físicamente.
+         * Se utiliza activación / desactivación.
          */
-        Route::resource('usuarios', UsuarioController::class)
-            ->except(['show', 'destroy']);
+        Route::resource(
+            'usuarios',
+            UsuarioController::class
+        )->except([
+            'show',
+            'destroy',
+        ]);
 
-        // Activar / desactivar usuario.
+
         Route::patch(
             '/usuarios/{usuario}/estado',
             [UsuarioController::class, 'cambiarEstado']
         )->name('usuarios.cambiar-estado');
     });
+
 
     /*
     |--------------------------------------------------------------------------
@@ -91,41 +123,141 @@ Route::middleware('auth')->group(function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::middleware('rol:Administrador,Secretaria')->group(function () {
-
-        // Gestión de clientes.
-        Route::resource('clientes', ClienteController::class)
-            ->except('show');
-
-        // Gestión de contadores.
-        Route::resource('contadores', ContadorController::class)
-            ->parameters(['contadores' => 'contador'])
-            ->except('show');
+    Route::middleware(
+        'rol:Administrador,Secretaria'
+    )->group(function () {
 
         /*
-         * Mantenimiento de servicios (catálogo usado por Contadores).
-         * No existe ruta DELETE, se maneja como baja lógica en el controller.
+         * ================================================================
+         * ALTA INTEGRAL DE SERVICIO
+         * ================================================================
+         *
+         * Flujo operativo:
+         *
+         * Cliente existente o cliente nuevo
+         *          ↓
+         * Servicio
+         *          ↓
+         * Tarifa
+         *          ↓
+         * Contador
+         *
+         * No utiliza una tabla adicional.
+         * Coordina las entidades existentes de Cliente y Contador.
          */
-        Route::resource('servicios', ServicioController::class)
+        Route::get(
+            '/alta-servicio',
+            [AltaServicioController::class, 'create']
+        )->name('alta-servicio.create');
+
+
+        Route::post(
+            '/alta-servicio',
+            [AltaServicioController::class, 'store']
+        )->name('alta-servicio.store');
+
+
+        /*
+         * ================================================================
+         * CLIENTES
+         * ================================================================
+         */
+
+        Route::resource(
+            'clientes',
+            ClienteController::class
+        )->except('show');
+
+
+        /*
+         * ================================================================
+         * CONTADORES
+         * ================================================================
+         */
+
+        Route::resource(
+            'contadores',
+            ContadorController::class
+        )
+            ->parameters([
+                'contadores' => 'contador',
+            ])
             ->except('show');
 
-        // Gestión de pagos (AQ-32 / AQ-33).
-        Route::get('/pagos', [PagoController::class, 'index'])
-            ->name('pagos.index');
 
-        Route::get('/pagos/{recibo}/registrar', [PagoController::class, 'create'])
-            ->name('pagos.create');
+        /*
+         * ================================================================
+         * SERVICIOS
+         * ================================================================
+         *
+         * AQ-74:
+         * Mantenimiento del catálogo de servicios.
+         *
+         * Actualmente Servicio únicamente clasifica qué servicio
+         * presta un contador.
+         *
+         * No interviene directamente en el cálculo del recibo.
+         */
 
-        Route::post('/pagos', [PagoController::class, 'store'])
-            ->name('pagos.store');
+        Route::resource(
+            'servicios',
+            ServicioController::class
+        )->except('show');
 
-        // Recibo imprimible y comprobante de pago (AQ-30).
+
+        /*
+         * ================================================================
+         * TARIFAS
+         * ================================================================
+         */
+
+        Route::resource(
+            'tarifas',
+            TarifaController::class
+        )->except('show');
+
+        Route::get('/recibos', [ReciboController::class, 'index'])
+            ->name('recibos.index');
+
+
+        /*
+         * ================================================================
+         * PAGOS
+         * ================================================================
+         *
+         * Permite:
+         *
+         * - consultar recibos pendientes;
+         * - calcular mora;
+         * - registrar el pago;
+         * - cambiar el recibo a PAGADO;
+         * - generar el comprobante correspondiente.
+         */
+
         Route::get(
-            '/recibos/{recibo}/imprimir',
-            [ReciboController::class, 'imprimir']
-        )->name('recibos.imprimir');
+            '/pagos',
+            [PagoController::class, 'index']
+        )->name('pagos.index');
 
-        // Dashboard de estado de cuenta (AQ-35).
+
+        Route::get(
+            '/pagos/{recibo}/registrar',
+            [PagoController::class, 'create']
+        )->name('pagos.create');
+
+
+        Route::post(
+            '/pagos',
+            [PagoController::class, 'store']
+        )->name('pagos.store');
+
+
+        /*
+         * ================================================================
+         * DASHBOARD DE ESTADO DE CUENTA
+         * ================================================================
+         */
+
         Route::get(
             '/dashboard/estado-cuenta',
             [DashboardEstadoCuentaController::class, 'index']
@@ -135,27 +267,62 @@ Route::middleware('auth')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Tarifas
+    | Administrador, Secretaria y Lector
+    |--------------------------------------------------------------------------
+    |
+    | El Lector puede:
+    |
+    | - registrar lecturas;
+    | - consultar lecturas;
+    | - imprimir el recibo generado.
+    |
+    | El Lector NO puede:
+    |
+    | - registrar pagos;
+    | - administrar clientes;
+    | - administrar contadores;
+    | - administrar tarifas;
+    | - administrar servicios;
+    | - realizar altas de servicio.
     |--------------------------------------------------------------------------
     */
 
-    // Disponible únicamente para Administrador y Secretaria.
-    Route::middleware('rol:Administrador,Secretaria')->group(function () {
-        Route::resource('tarifas', TarifaController::class)
-            ->except('show');
+    Route::middleware(
+        'rol:Administrador,Secretaria,Lector'
+    )->group(function () {
+
+        /*
+         * ================================================================
+         * LECTURAS
+         * ================================================================
+         */
+
+        Route::resource(
+            'lecturas',
+            LecturaController::class
+        )->only([
+            'index',
+            'create',
+            'store',
+        ]);
+
+
+        /*
+         * ================================================================
+         * RECIBO / COMPROBANTE IMPRIMIBLE
+         * ================================================================
+         *
+         * Lector:
+         * puede imprimir el recibo generado en campo.
+         *
+         * Administrador / Secretaria:
+         * pueden consultar, reimprimir y visualizar el comprobante
+         * cuando el recibo se encuentre pagado.
+         */
+
+        Route::get(
+            '/recibos/{recibo}/imprimir',
+            [ReciboController::class, 'imprimir']
+        )->name('recibos.imprimir');
     });
-
-    /*
-    |--------------------------------------------------------------------------
-    | Lecturas
-    |--------------------------------------------------------------------------
-    */
-
-    // Disponible para Administrador, Secretaria y Lector.
-    Route::middleware('rol:Administrador,Secretaria,Lector')->group(function () {
-        Route::resource('lecturas', LecturaController::class)
-            ->only(['index', 'create', 'store']);
-    });
-
-
 });

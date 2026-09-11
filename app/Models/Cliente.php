@@ -3,14 +3,22 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Cliente extends Model
 {
-    // Como no usamos migraciones, le decimos a Eloquent
-    // exactamente qué tabla ya existe en la base de datos.
+    /**
+     * Tabla asociada al modelo.
+     *
+     * El proyecto trabaja sobre una base de datos
+     * ya existente.
+     */
     protected $table = 'clientes';
 
-    // Campos que se pueden llenar de forma masiva (formularios)
+
+    /**
+     * Campos permitidos para asignación masiva.
+     */
     protected $fillable = [
         'nombre',
         'dpi',
@@ -19,9 +27,34 @@ class Cliente extends Model
         'activo',
     ];
 
-    // Relación: un cliente puede tener varios contadores/predios
-    public function contadores()
+
+    /**
+     * Conversión automática de atributos.
+     */
+    protected function casts(): array
     {
-        return $this->hasMany(Contador::class, 'cliente_id');
+        return [
+            'activo' => 'boolean',
+        ];
+    }
+
+
+    /**
+     * Relación:
+     *
+     * Un cliente puede tener uno o varios contadores.
+     *
+     * Esto permite representar casos como:
+     *
+     * Cliente
+     *  ├── Contador 001
+     *  └── Contador 002
+     */
+    public function contadores(): HasMany
+    {
+        return $this->hasMany(
+            Contador::class,
+            'cliente_id'
+        );
     }
 }
