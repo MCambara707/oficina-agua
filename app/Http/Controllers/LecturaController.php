@@ -6,6 +6,7 @@ use App\Models\Contador;
 use App\Models\Lectura;
 use App\Models\Recibo;
 use App\Services\Auditoria;
+use App\Services\GeneradorNumeroRecibo;
 use App\Services\Redondeo;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
@@ -67,7 +68,6 @@ class LecturaController extends Controller
             )
         );
     }
-
 
     /**
      * Muestra el formulario para registrar una lectura.
@@ -132,7 +132,6 @@ class LecturaController extends Controller
         );
     }
 
-
     /**
      * Registra una lectura y genera automáticamente
      * el recibo correspondiente.
@@ -142,75 +141,184 @@ class LecturaController extends Controller
         $datos = $request->validate([
             'contador_id' => ['required', 'integer', 'exists:contadores,id'],
             'periodo' => ['required', 'date_format:Y-m'],
-            'lectura_actual' => ['required', 'numeric', 'min:0', 'max:999999999.999', 'decimal:0,3'],
+            'lectura_actual' => [
+                'required',
+                'numeric',
+                'min:0',
+                'max:999999999.999',
+                'decimal:0,3',
+            ],
             'observacion' => ['nullable', 'string', 'max:255'],
         ], [
-            'lectura_actual.min' => 'La lectura actual no puede ser negativa.',
-            'lectura_actual.decimal' => 'La lectura admite como máximo tres decimales.',
-            'periodo.date_format' => 'El período debe tener formato año-mes.',
+            'lectura_actual.min' =>
+                'La lectura actual no puede ser negativa.',
+
+            'lectura_actual.decimal' =>
+                'La lectura admite como máximo tres decimales.',
+
+            'periodo.date_format' =>
+                'El período debe tener formato año-mes.',
         ]);
 
         try {
             $recibo = DB::transaction(function () use ($datos) {
-                // Después de beginTransaction, también si Laravel tuvo que reconectar.
+
+                /*
+                 * Después de beginTransaction,
+                 * también si Laravel tuvo que reconectar.
+                 */
                 Auditoria::establecerUsuario();
-                // El contador siempre existe, incluso antes de su primera lectura.
-                // Su bloqueo serializa lecturas de cualquier período y cambios de base.
-                $contador = Contador::query()->lockForUpdate()->findOrFail($datos['contador_id']);
+
+                /*
+                 * El contador siempre existe, incluso antes
+                 * de su primera lectura.
+                 *
+                 * Su bloqueo serializa lecturas de cualquier
+                 * período y cambios de lectura inicial.
+                 */
+                $contador = Contador::query()
+                    ->lockForUpdate()
+                    ->findOrFail($datos['contador_id']);
+
                 if (! $contador->activo) {
                     throw ValidationException::withMessages([
-                        'contador_id' => 'El contador seleccionado no está activo.',
+                        'contador_id' =>
+                            'El contador seleccionado no está activo.',
                     ]);
                 }
 
-                $periodoFecha = $datos['periodo'].'-01';
+                $periodoFecha = $datos['periodo'] . '-01';
+
                 $ultimaLectura = $contador->lecturas()
-                    ->orderByDesc('periodo')->orderByDesc('id')->lockForUpdate()->first();
+                    ->orderByDesc('periodo')
+                    ->orderByDesc('id')
+                    ->lockForUpdate()
+                    ->first();
 
-                if ($ultimaLectura && $periodoFecha <= $ultimaLectura->periodo->toDateString()) {
+                /*
+                 * No se permiten períodos repetidos
+                 * ni anteriores al último registrado.
+                 */
+                if (
+                    $ultimaLectura &&
+                    $periodoFecha <= $ultimaLectura->periodo->toDateString()
+                ) {
                     throw ValidationException::withMessages([
-                        'periodo' => 'El período debe ser posterior a la última lectura registrada ('
-                            .$ultimaLectura->periodo->format('m/Y').'). No se permiten períodos repetidos ni anteriores.',
+                        'periodo' =>
+                            'El período debe ser posterior a la última lectura registrada ('
+                            . $ultimaLectura->periodo->format('m/Y')
+                            . '). No se permiten períodos repetidos ni anteriores.',
                     ]);
                 }
 
-                if (! $ultimaLectura && $contador->lectura_inicial === null) {
+                /*
+                 * Para la primera lectura debe existir
+                 * una lectura inicial conocida.
+                 */
+                if (
+                    ! $ultimaLectura &&
+                    $contador->lectura_inicial === null
+                ) {
                     throw ValidationException::withMessages([
-                        'contador_id' => 'Falta la lectura inicial de este contador. Administrador o Secretaria deben registrarla antes de la primera lectura.',
+                        'contador_id' =>
+                            'Falta la lectura inicial de este contador. '
+                            . 'Administrador o Secretaria deben registrarla '
+                            . 'antes de la primera lectura.',
                     ]);
                 }
 
-                // Ambos valores proceden de BD. Ninguna base enviada por el navegador se utiliza.
-                $lecturaAnterior = (float) ($ultimaLectura?->lectura_actual ?? $contador->lectura_inicial);
+                /*
+                 * Ambos valores proceden de BD.
+                 * Ninguna lectura anterior enviada por navegador
+                 * se utiliza para el cálculo.
+                 */
+                $lecturaAnterior = (float) (
+                    $ultimaLectura?->lectura_actual
+                    ?? $contador->lectura_inicial
+                );
+
                 $lecturaActual = (float) $datos['lectura_actual'];
+
                 if ($lecturaActual < $lecturaAnterior) {
                     throw ValidationException::withMessages([
-                        'lectura_actual' => 'La lectura actual no puede ser menor a la anterior ('
-                            .$this->formatearM3($lecturaAnterior).' m³).',
+                        'lectura_actual' =>
+                            'La lectura actual no puede ser menor a la anterior ('
+                            . $this->formatearM3($lecturaAnterior)
+                            . ' m³).',
                     ]);
                 }
-                $consumo = round($lecturaActual - $lecturaAnterior, 3);
+
+                $consumo = round(
+                    $lecturaActual - $lecturaAnterior,
+                    3
+                );
+
                 $fechaEmision = now()->toDateString();
 
-                // La tarifa asignada identifica el tipo contratado. Su versión vigente
-                // a la fecha de emisión queda vinculada al recibo de forma histórica.
-                $contador->setRelation('tarifa', $contador->tarifa()->lockForUpdate()->first());
-                $tarifa = $contador->tarifaVigente($fechaEmision, true);
-                if (! $tarifa || $tarifa->capacidad === null || (float) $tarifa->capacidad <= 0
-                    || $tarifa->precio_por_m3 === null || (float) $tarifa->precio_por_m3 < 0
-                    || $tarifa->precio_exceso_m3 === null || (float) $tarifa->precio_exceso_m3 <= 0) {
+                /*
+                 * La tarifa asignada identifica el tipo contratado.
+                 *
+                 * Su versión vigente a la fecha de emisión
+                 * queda vinculada al recibo de forma histórica.
+                 */
+                $contador->setRelation(
+                    'tarifa',
+                    $contador->tarifa()
+                        ->lockForUpdate()
+                        ->first()
+                );
+
+                $tarifa = $contador->tarifaVigente(
+                    $fechaEmision,
+                    true
+                );
+
+                if (
+                    ! $tarifa ||
+                    $tarifa->capacidad === null ||
+                    (float) $tarifa->capacidad <= 0 ||
+                    $tarifa->precio_por_m3 === null ||
+                    (float) $tarifa->precio_por_m3 < 0 ||
+                    $tarifa->precio_exceso_m3 === null ||
+                    (float) $tarifa->precio_exceso_m3 <= 0
+                ) {
                     throw ValidationException::withMessages([
-                        'contador_id' => 'No existe una tarifa vigente válida para el tipo de este contador en la fecha de emisión. Revise vigencia, capacidad y precios.',
+                        'contador_id' =>
+                            'No existe una tarifa vigente válida para el tipo '
+                            . 'de este contador en la fecha de emisión. '
+                            . 'Revise vigencia, capacidad y precios.',
                     ]);
                 }
 
-                [$monto, $observacionRecibo] = $this->calcularMonto($tarifa, $consumo);
-                if (! is_finite($monto) || $monto < 0 || $monto > 9999999999.99) {
+                /*
+                 * Calcula el importe según el consumo
+                 * y la tarifa vigente.
+                 */
+                [
+                    $monto,
+                    $observacionRecibo
+                ] = $this->calcularMonto(
+                    $tarifa,
+                    $consumo
+                );
+
+                if (
+                    ! is_finite($monto) ||
+                    $monto < 0 ||
+                    $monto > 9999999999.99
+                ) {
                     throw ValidationException::withMessages([
-                        'lectura_actual' => 'El importe calculado excede el monto permitido para un recibo.',
+                        'lectura_actual' =>
+                            'El importe calculado excede el monto permitido '
+                            . 'para un recibo.',
                     ]);
                 }
 
+                /*
+                 * =====================================================
+                 * CREACIÓN DE LA LECTURA
+                 * =====================================================
+                 */
                 $lectura = Lectura::create([
                     'contador_id' => $contador->id,
                     'usuario_lector_id' => auth()->id(),
@@ -219,38 +327,98 @@ class LecturaController extends Controller
                     'lectura_anterior' => $lecturaAnterior,
                     'lectura_actual' => $lecturaActual,
                     'consumo_m3' => $consumo,
-                    'observacion' => $datos['observacion'] ?? null,
+                    'observacion' =>
+                        $datos['observacion'] ?? null,
                 ]);
 
+                /*
+                 * =====================================================
+                 * AQ-71 - NUMERACIÓN DEFINITIVA DEL RECIBO
+                 * =====================================================
+                 *
+                 * Ejemplo:
+                 *
+                 * REC-2026-4821-000001
+                 *
+                 * REC      = tipo de documento
+                 * 2026     = año de emisión
+                 * 4821     = últimos 4 dígitos del contador
+                 * 000001   = correlativo general único
+                 *
+                 * El generador utiliza lockForUpdate(), por lo que
+                 * debe ejecutarse dentro de esta misma transacción.
+                 */
+                $numeroRecibo = app(
+                    GeneradorNumeroRecibo::class
+                )->generar(
+                    $contador,
+                    $fechaEmision
+                );
+
+                /*
+                 * =====================================================
+                 * CREACIÓN DEL RECIBO
+                 * =====================================================
+                 *
+                 * Si esta creación falla, Laravel revierte:
+                 *
+                 * - la lectura;
+                 * - el incremento del correlativo;
+                 * - cualquier cambio realizado en esta transacción.
+                 */
                 return Recibo::create([
                     'lectura_id' => $lectura->id,
                     'tarifa_id' => $tarifa->id,
-                    // AQ-71 conserva su alcance pendiente; el ID único evita colisiones.
-                    'numero_recibo' => sprintf('REC-%06d', $lectura->id),
+                    'numero_recibo' => $numeroRecibo,
                     'fecha_emision' => $fechaEmision,
                     'monto' => $monto,
                     'estado' => 'PENDIENTE',
                     'observacion' => $observacionRecibo,
                 ]);
             }, 3);
+
         } catch (ValidationException $e) {
+
             throw $e;
+
         } catch (QueryException $e) {
+
             report($e);
-            return back()->withInput()->withErrors([
-                'lectura_actual' => 'No se pudo registrar la lectura y generar el recibo. Verifique que el período no esté repetido e inténtelo nuevamente.',
-            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'lectura_actual' =>
+                        'No se pudo registrar la lectura y generar el recibo. '
+                        . 'Verifique que el período no esté repetido '
+                        . 'e inténtelo nuevamente.',
+                ]);
+
         } catch (\Throwable $e) {
+
             report($e);
-            return back()->withInput()->withErrors([
-                'lectura_actual' => 'Ocurrió un problema al registrar la lectura. No se guardó información parcial.',
-            ]);
+
+            return back()
+                ->withInput()
+                ->withErrors([
+                    'lectura_actual' =>
+                        'Ocurrió un problema al registrar la lectura. '
+                        . 'No se guardó información parcial.',
+                ]);
         }
 
-        return redirect()->route('lecturas.index')->with([
-            'exito' => 'Lectura registrada correctamente. Se generó el recibo N.° '.$recibo->numero_recibo.'.',
-            'recibo_generado_id' => $recibo->id,
-        ]);
+        return redirect()
+            ->route('lecturas.index')
+            ->with([
+                'exito' =>
+                    'Lectura registrada correctamente. '
+                    . 'Se generó el recibo N.° '
+                    . $recibo->numero_recibo
+                    . '.',
+
+                'recibo_generado_id' =>
+                    $recibo->id,
+            ]);
     }
 
     /**
@@ -279,7 +447,6 @@ class LecturaController extends Controller
         $precioExceso =
             (float) $tarifa->precio_exceso_m3;
 
-
         /*
          * =========================================================
          * SIN EXCESO
@@ -305,13 +472,11 @@ class LecturaController extends Controller
             ];
         }
 
-
         /*
          * =========================================================
          * CON EXCESO
          * =========================================================
          */
-
         $consumoExceso =
             $consumo - $capacidad;
 
@@ -341,7 +506,6 @@ class LecturaController extends Controller
             $observacion,
         ];
     }
-
 
     /**
      * Elimina ceros decimales innecesarios en valores de m³.
