@@ -19,9 +19,9 @@
     <div class="card">
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <form method="GET" class="d-flex" style="max-width: 400px;">
+                <form method="GET" class="d-flex flex-column flex-sm-row gap-2 col-12 col-lg-7">
                     <input type="text" name="q" value="{{ $busqueda }}"
-                           class="form-control me-2" placeholder="Buscar por nombre">
+                           class="form-control" placeholder="Buscar por nombre">
                     <button type="submit" class="btn btn-secondary text-nowrap">Buscar</button>
                 </form>
 
@@ -31,7 +31,7 @@
             </div>
         </div>
 
-        <div class="card-body p-0">
+        <div class="card-body p-0 table-responsive">
             <table class="table table-striped mb-0">
                 <thead>
                     <tr>
@@ -54,18 +54,20 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('servicios.edit', $servicio) }}"
-                                   class="btn btn-sm btn-warning">Editar</a>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <a href="{{ route('servicios.edit', $servicio) }}"
+                                       class="btn btn-sm btn-warning">Editar</a>
 
-                                <form action="{{ route('servicios.destroy', $servicio) }}"
-                                      method="POST" class="d-inline"
-                                      onsubmit="return confirm('¿Seguro que querés eliminar este servicio?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger">
-                                        Eliminar
-                                    </button>
-                                </form>
+                                    <form action="{{ route('servicios.destroy', $servicio) }}"
+                                          method="POST" class="d-inline"
+                                          onsubmit="return confirm('¿Seguro que querés eliminar este servicio?');">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-danger">
+                                            Eliminar
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -80,7 +82,7 @@
         </div>
 
         <div class="card-footer">
-            {{ $servicios->links() }}
+            {{ $servicios->links('pagination::bootstrap-5') }}
         </div>
     </div>
 

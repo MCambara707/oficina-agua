@@ -29,7 +29,7 @@
             role="alert"
         >
             <strong>
-                <i class="fas fa-exclamation-circle mr-1"></i>
+                <i class="fas fa-exclamation-circle me-1"></i>
                 Por favor corrija los siguientes errores:
             </strong>
 
@@ -41,11 +41,10 @@
 
             <button
                 type="button"
-                class="close"
-                data-dismiss="alert"
+                class="btn-close"
+                data-bs-dismiss="alert"
                 aria-label="Cerrar"
             >
-                <span aria-hidden="true">&times;</span>
             </button>
         </div>
 
@@ -59,7 +58,7 @@
     @if ($clientes->isEmpty())
 
         <div class="alert alert-warning">
-            <i class="fas fa-exclamation-triangle mr-1"></i>
+            <i class="fas fa-exclamation-triangle me-1"></i>
 
             No hay clientes activos disponibles.
 
@@ -73,7 +72,7 @@
     @if ($tarifas->isEmpty())
 
         <div class="alert alert-warning">
-            <i class="fas fa-exclamation-triangle mr-1"></i>
+            <i class="fas fa-exclamation-triangle me-1"></i>
 
             No hay tarifas activas registradas.
 
@@ -87,7 +86,7 @@
     @if ($servicios->isEmpty())
 
         <div class="alert alert-info">
-            <i class="fas fa-info-circle mr-1"></i>
+            <i class="fas fa-info-circle me-1"></i>
 
             Actualmente no hay servicios activos registrados.
 
@@ -544,9 +543,8 @@
                         id="vistaPrevia"
                         src=""
                         alt="Vista previa de la fotografía del contador"
-                        class="img-thumbnail"
+                        class="img-thumbnail img-fluid contador-photo-preview"
                         style="
-                            max-width: 280px;
                             max-height: 220px;
                             object-fit: cover;
                         "
@@ -563,19 +561,19 @@
 
                 <div class="form-group">
 
-                    <div class="custom-control custom-checkbox">
+                    <div class="form-check">
 
                         <input
                             type="checkbox"
                             name="activo"
                             id="activo"
-                            class="custom-control-input"
+                            class="form-check-input"
                             value="1"
                             @checked(old('activo', 1))
                         >
 
                         <label
-                            class="custom-control-label"
+                            class="form-check-label"
                             for="activo"
                         >
                             Contador activo
@@ -596,15 +594,15 @@
                 ================================================== --}}
 
                 <div
-                    class="d-flex flex-column flex-sm-row
+                    class="d-flex flex-column flex-sm-row flex-wrap gap-2
                            justify-content-between mt-4"
                 >
 
                     <a
                         href="{{ route('contadores.index') }}"
-                        class="btn btn-secondary mb-2 mb-sm-0"
+                        class="btn btn-secondary"
                     >
-                        <i class="fas fa-arrow-left mr-1"></i>
+                        <i class="fas fa-arrow-left me-1"></i>
                         Cancelar
                     </a>
 
@@ -617,7 +615,7 @@
                             || $tarifas->isEmpty()
                         )
                     >
-                        <i class="fas fa-save mr-1"></i>
+                        <i class="fas fa-save me-1"></i>
                         Guardar contador
                     </button>
 

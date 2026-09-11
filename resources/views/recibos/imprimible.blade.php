@@ -257,6 +257,45 @@
             font-size: 11px;
         }
 
+        @media screen {
+            .encabezado > *,
+            .grid > *,
+            .resumen > * {
+                min-width: 0;
+                max-width: 100%;
+            }
+
+            .logo {
+                max-width: 100%;
+            }
+
+            .dato,
+            .documento-info,
+            .resumen-item,
+            .fila-total {
+                overflow-wrap: anywhere;
+            }
+
+            .tabla-responsive {
+                max-width: 100%;
+                overflow-x: auto;
+            }
+
+            .acciones {
+                flex-wrap: wrap;
+            }
+        }
+
+        @media screen and (max-width: 1024px), screen and (pointer: coarse) {
+            .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-height: 44px;
+                font-size: 16px;
+            }
+        }
+
         @media (max-width: 700px) {
             body {
                 padding: 10px;
@@ -611,6 +650,7 @@
 
         <h2>Detalle del consumo</h2>
 
+        <div class="tabla-responsive" tabindex="0" role="region" aria-label="Detalle del consumo">
         <table class="tabla">
 
             <thead>
@@ -669,6 +709,7 @@
             </tbody>
 
         </table>
+        </div>
 
     </section>
 

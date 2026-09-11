@@ -56,8 +56,10 @@
                     <label class="form-check-label" for="activo">Activo</label>
                 </div>
 
-                <button type="submit" class="btn btn-primary">Actualizar</button>
-                <a href="{{ route('clientes.index') }}" class="btn btn-secondary">Cancelar</a>
+                <div class="d-flex flex-column flex-sm-row flex-wrap gap-2">
+                    <button type="submit" class="btn btn-primary">Actualizar</button>
+                    <a href="{{ route('clientes.index') }}" class="btn btn-secondary">Cancelar</a>
+                </div>
             </form>
 
         </div>

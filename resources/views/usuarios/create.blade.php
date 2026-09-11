@@ -148,20 +148,21 @@
 
                 </div>
 
-                <button
-                    type="submit"
-                    class="btn btn-primary"
-                >
-                    Guardar
-                </button>
+                <div class="d-flex flex-column flex-sm-row flex-wrap gap-2">
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
+                        Guardar
+                    </button>
 
-                <a
-                    href="{{ route('usuarios.index') }}"
-                    class="btn btn-secondary"
-                >
-                    Cancelar
-                </a>
-
+                    <a
+                        href="{{ route('usuarios.index') }}"
+                        class="btn btn-secondary"
+                    >
+                        Cancelar
+                    </a>
+                </div>
             </form>
 
         </div>

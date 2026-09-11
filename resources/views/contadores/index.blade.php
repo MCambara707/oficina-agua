@@ -19,9 +19,9 @@
     <div class="card">
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <form method="GET" action="{{ route('contadores.index') }}" class="d-flex" style="max-width: 500px;">
+                <form method="GET" action="{{ route('contadores.index') }}" class="d-flex flex-column flex-sm-row gap-2 col-12 col-lg-7">
                     <input type="text" name="q" value="{{ $busqueda }}"
-                           class="form-control mr-2 me-2" placeholder="Buscar por número, dirección, referencia o sector">
+                           class="form-control" placeholder="Buscar por número, dirección, referencia o sector">
                     <button type="submit" class="btn btn-secondary text-nowrap">Buscar</button>
                 </form>
 
@@ -96,18 +96,20 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('contadores.edit', $contador) }}"
-                                       class="btn btn-sm btn-warning">Editar</a>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a href="{{ route('contadores.edit', $contador) }}"
+                                           class="btn btn-sm btn-warning">Editar</a>
 
-                                    <form action="{{ route('contadores.destroy', $contador) }}"
-                                          method="POST" class="d-inline"
-                                          onsubmit="return confirm('¿Eliminar este contador?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-danger">
-                                            Eliminar
-                                        </button>
-                                    </form>
+                                        <form action="{{ route('contadores.destroy', $contador) }}"
+                                              method="POST" class="d-inline"
+                                              onsubmit="return confirm('¿Eliminar este contador?');">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="btn btn-sm btn-danger">
+                                                Eliminar
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
                         @empty
@@ -123,7 +125,7 @@
         </div>
 
         <div class="card-footer">
-            {{ $contadores->links() }}
+            {{ $contadores->links('pagination::bootstrap-5') }}
         </div>
     </div>
 

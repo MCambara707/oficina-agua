@@ -28,13 +28,12 @@
                 <form
                     method="GET"
                     action="{{ route('usuarios.index') }}"
-                    class="d-flex"
-                    style="max-width: 500px;"
+                    class="d-flex flex-column flex-sm-row gap-2 col-12 col-lg-7"
                 >
                     <input
                         type="text"
                         name="q"
-                        class="form-control me-2"
+                        class="form-control"
                         value="{{ $busqueda }}"
                         placeholder="Buscar por nombre, correo o rol"
                     >
@@ -111,60 +110,60 @@
                                 </td>
 
                                 <td>
-
-                                    <a
-                                        href="{{ route('usuarios.edit', $usuario) }}"
-                                        class="btn btn-sm btn-warning"
-                                    >
-                                        Editar
-                                    </a>
-
-                                    @if (auth()->id() === $usuario->id && $usuario->activo)
-
-                                        <button
-                                            type="button"
-                                            class="btn btn-sm btn-secondary"
-                                            disabled
-                                            title="No puede desactivar su propia cuenta"
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a
+                                            href="{{ route('usuarios.edit', $usuario) }}"
+                                            class="btn btn-sm btn-warning"
                                         >
-                                            Desactivar
-                                        </button>
+                                            Editar
+                                        </a>
 
-                                    @else
+                                        @if (auth()->id() === $usuario->id && $usuario->activo)
 
-                                        <form
-                                            action="{{ route('usuarios.cambiar-estado', $usuario) }}"
-                                            method="POST"
-                                            class="d-inline"
-                                            onsubmit="return confirm(
-                                                '{{ $usuario->activo
-                                                    ? '¿Seguro que desea desactivar este usuario?'
-                                                    : '¿Seguro que desea activar este usuario?' }}'
-                                            );"
-                                        >
-                                            @csrf
-                                            @method('PATCH')
+                                            <button
+                                                type="button"
+                                                class="btn btn-sm btn-secondary"
+                                                disabled
+                                                title="No puede desactivar su propia cuenta"
+                                            >
+                                                Desactivar
+                                            </button>
 
-                                            @if ($usuario->activo)
-                                                <button
-                                                    type="submit"
-                                                    class="btn btn-sm btn-danger"
-                                                >
-                                                    Desactivar
-                                                </button>
-                                            @else
-                                                <button
-                                                    type="submit"
-                                                    class="btn btn-sm btn-success"
-                                                >
-                                                    Activar
-                                                </button>
-                                            @endif
+                                        @else
 
-                                        </form>
+                                            <form
+                                                action="{{ route('usuarios.cambiar-estado', $usuario) }}"
+                                                method="POST"
+                                                class="d-inline"
+                                                onsubmit="return confirm(
+                                                    '{{ $usuario->activo
+                                                        ? '¿Seguro que desea desactivar este usuario?'
+                                                        : '¿Seguro que desea activar este usuario?' }}'
+                                                );"
+                                            >
+                                                @csrf
+                                                @method('PATCH')
 
-                                    @endif
+                                                @if ($usuario->activo)
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-sm btn-danger"
+                                                    >
+                                                        Desactivar
+                                                    </button>
+                                                @else
+                                                    <button
+                                                        type="submit"
+                                                        class="btn btn-sm btn-success"
+                                                    >
+                                                        Activar
+                                                    </button>
+                                                @endif
 
+                                            </form>
+
+                                        @endif
+                                    </div>
                                 </td>
 
                             </tr>
@@ -190,7 +189,7 @@
         </div>
 
         <div class="card-footer">
-            {{ $usuarios->links() }}
+            {{ $usuarios->links('pagination::bootstrap-5') }}
         </div>
 
     </div>

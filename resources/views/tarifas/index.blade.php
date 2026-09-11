@@ -29,8 +29,7 @@
                 class="mb-3"
             >
                 <div
-                    class="input-group"
-                    style="max-width: 400px;"
+                    class="d-flex flex-column flex-sm-row gap-2 col-12 col-lg-7"
                 >
                     <input
                         type="text"
@@ -40,14 +39,12 @@
                         value="{{ $busqueda }}"
                     >
 
-                    <div class="input-group-append">
-                        <button
-                            class="btn btn-secondary"
-                            type="submit"
-                        >
-                            Buscar
-                        </button>
-                    </div>
+                    <button
+                        class="btn btn-secondary"
+                        type="submit"
+                    >
+                        Buscar
+                    </button>
                 </div>
             </form>
 
@@ -174,29 +171,31 @@
                                 </td>
 
                                 <td>
-                                    <a
-                                        href="{{ route('tarifas.edit', $tarifa) }}"
-                                        class="btn btn-sm btn-warning"
-                                    >
-                                        Editar
-                                    </a>
-
-                                    <form
-                                        action="{{ route('tarifas.destroy', $tarifa) }}"
-                                        method="POST"
-                                        class="d-inline"
-                                        onsubmit="return confirm('¿Eliminar esta tarifa?');"
-                                    >
-                                        @csrf
-                                        @method('DELETE')
-
-                                        <button
-                                            type="submit"
-                                            class="btn btn-sm btn-danger"
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <a
+                                            href="{{ route('tarifas.edit', $tarifa) }}"
+                                            class="btn btn-sm btn-warning"
                                         >
-                                            Eliminar
-                                        </button>
-                                    </form>
+                                            Editar
+                                        </a>
+
+                                        <form
+                                            action="{{ route('tarifas.destroy', $tarifa) }}"
+                                            method="POST"
+                                            class="d-inline"
+                                            onsubmit="return confirm('¿Eliminar esta tarifa?');"
+                                        >
+                                            @csrf
+                                            @method('DELETE')
+
+                                            <button
+                                                type="submit"
+                                                class="btn btn-sm btn-danger"
+                                            >
+                                                Eliminar
+                                            </button>
+                                        </form>
+                                    </div>
                                 </td>
                             </tr>
 
@@ -217,7 +216,7 @@
 
             </div>
 
-            {{ $tarifas->links() }}
+            {{ $tarifas->links('pagination::bootstrap-5') }}
 
         </div>
     </div>
