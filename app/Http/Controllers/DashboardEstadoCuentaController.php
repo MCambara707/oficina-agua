@@ -18,138 +18,478 @@ class DashboardEstadoCuentaController extends Controller
         'con-mora',
     ];
 
+
     /**
-     * AQ-35 — Muestra el estado de cuenta de los clientes.
+     * Muestra el estado de cuenta consolidado de los clientes.
      *
      * Estados:
-     * - Al día: no tiene recibos pendientes.
-     * - Pendiente: tiene recibos pendientes, pero ninguno está atrasado.
-     * - Con mora: tiene al menos un recibo pendiente atrasado.
+     *
+     * - Al día:
+     *   no tiene recibos pendientes.
+     *
+     * - Pendiente:
+     *   tiene recibos pendientes, pero ninguno vencido.
+     *
+     * - Con mora:
+     *   tiene al menos un recibo pendiente vencido.
      */
     public function index(Request $request)
     {
-        $busqueda = trim((string) $request->query('busqueda', ''));
-        $estado = (string) $request->query('estado', '');
+        $busqueda = trim(
+            (string) $request->query('busqueda', '')
+        );
 
-        // Evita aceptar valores de filtro no contemplados.
-        if (! in_array($estado, self::ESTADOS_VALIDOS, true)) {
+        $estado = trim(
+            (string) $request->query('estado', '')
+        );
+
+
+        /*
+         * =========================================================
+         * VALIDAR FILTRO DE ESTADO
+         * =========================================================
+         */
+        if (! in_array(
+            $estado,
+            self::ESTADOS_VALIDOS,
+            true
+        )) {
             $estado = '';
         }
 
+
         /*
-         * Primero obtenemos los clientes.
-         * La búsqueda por nombre se hace desde la base de datos.
+         * =========================================================
+         * CLIENTES
+         * =========================================================
+         *
+         * La búsqueda permite encontrar clientes por:
+         *
+         * - nombre;
+         * - DPI;
+         * - número de contador.
+         *
+         * Además cargamos sus contadores y servicios para poder
+         * mostrar información operacional en el dashboard.
          */
         $clientes = Cliente::query()
-            ->when($busqueda !== '', function ($query) use ($busqueda) {
-                $query->where('nombre', 'like', "%{$busqueda}%");
-            })
+            ->with([
+                'contadores.servicio',
+            ])
+            ->when(
+                $busqueda !== '',
+                function ($query) use ($busqueda) {
+
+                    $query->where(
+                        function ($q) use ($busqueda) {
+
+                            /*
+                             * Buscar por nombre.
+                             */
+                            $q->where(
+                                'nombre',
+                                'like',
+                                '%' . $busqueda . '%'
+                            );
+
+                            /*
+                             * Buscar por DPI.
+                             */
+                            $q->orWhere(
+                                'dpi',
+                                'like',
+                                '%' . $busqueda . '%'
+                            );
+
+                            /*
+                             * Buscar por número de contador.
+                             */
+                            $q->orWhereHas(
+                                'contadores',
+                                function ($contadorQuery) use ($busqueda) {
+
+                                    $contadorQuery->where(
+                                        'numero_registro',
+                                        'like',
+                                        '%' . $busqueda . '%'
+                                    );
+                                }
+                            );
+                        }
+                    );
+                }
+            )
             ->orderBy('nombre')
             ->get();
 
+
         $clienteIds = $clientes->pluck('id');
 
+
         /*
-         * Obtenemos los recibos de todos los clientes encontrados
-         * en una sola consulta y cargamos la tarifa porque AQ-34
-         * la necesita para calcular la mora.
+         * =========================================================
+         * RECIBOS AGRUPADOS POR CLIENTE
+         * =========================================================
+         *
+         * Se obtiene toda la información necesaria en una sola
+         * consulta para evitar múltiples consultas por cliente.
          */
         $recibosPorCliente = collect();
 
         if ($clienteIds->isNotEmpty()) {
+
             $recibosPorCliente = Recibo::with([
-                'lectura.contador',
-                'tarifa',
-            ])
-                ->whereHas('lectura.contador', function ($query) use ($clienteIds) {
-                    $query->whereIn('cliente_id', $clienteIds);
-                })
+                    'lectura.contador.cliente',
+                    'lectura.contador.servicio',
+                    'tarifa',
+                    'pago',
+                ])
+                ->whereHas(
+                    'lectura.contador',
+                    function ($query) use ($clienteIds) {
+
+                        $query->whereIn(
+                            'cliente_id',
+                            $clienteIds
+                        );
+                    }
+                )
+                ->orderByDesc('fecha_emision')
+                ->orderByDesc('id')
                 ->get()
-                ->groupBy(function (Recibo $recibo) {
-                    return $recibo->lectura?->contador?->cliente_id;
-                });
+                ->groupBy(
+                    function (Recibo $recibo) {
+
+                        return $recibo
+                            ->lectura
+                            ?->contador
+                            ?->cliente_id;
+                    }
+                );
         }
 
+
         /*
-         * Construimos una fila de estado de cuenta para cada cliente.
+         * =========================================================
+         * FILAS DEL DASHBOARD
+         * =========================================================
          */
-        $filas = $clientes->map(function (Cliente $cliente) use ($recibosPorCliente) {
-            $recibos = $recibosPorCliente->get($cliente->id, collect());
+        $filas = $clientes->map(
+            function (Cliente $cliente) use ($recibosPorCliente) {
 
-            return $this->construirFila($cliente, $recibos);
-        });
+                $recibos = $recibosPorCliente->get(
+                    $cliente->id,
+                    collect()
+                );
+
+                return $this->construirFila(
+                    $cliente,
+                    $recibos
+                );
+            }
+        );
+
 
         /*
-         * El estado se calcula usando la lógica de AQ-34,
-         * por eso este filtro se aplica después de construir las filas.
+         * =========================================================
+         * FILTRAR POR ESTADO
+         * =========================================================
+         *
+         * El estado depende del cálculo de mora,
+         * por eso se aplica después de construir cada fila.
          */
         if ($estado !== '') {
+
             $filas = $filas
-                ->where('estado_clave', $estado)
+                ->where(
+                    'estado_clave',
+                    $estado
+                )
                 ->values();
         }
 
-        return view('dashboard.estado-cuenta', compact(
-            'filas',
-            'busqueda',
-            'estado'
-        ));
-    }
-
-    /**
-     * Construye la información consolidada de un cliente.
-     */
-    private function construirFila(Cliente $cliente, Collection $recibos): array
-    {
-        $pendientes = $recibos->filter(function (Recibo $recibo) {
-            return $recibo->estado === 'PENDIENTE';
-        });
 
         /*
-         * Reutilizamos directamente AQ-34.
-         * No se vuelve a implementar aquí la regla de vencimiento.
+         * =========================================================
+         * RESUMEN GENERAL
+         * =========================================================
+         *
+         * Información útil para mostrar indicadores superiores
+         * en el dashboard.
          */
-        $tieneMora = $pendientes->contains(function (Recibo $recibo) {
-            return $recibo->estaAtrasado();
-        });
+        $resumenGeneral = [
+            'clientes' =>
+                $filas->count(),
+
+            'al_dia' =>
+                $filas
+                    ->where(
+                        'estado_clave',
+                        'al-dia'
+                    )
+                    ->count(),
+
+            'pendientes' =>
+                $filas
+                    ->where(
+                        'estado_clave',
+                        'pendiente'
+                    )
+                    ->count(),
+
+            'con_mora' =>
+                $filas
+                    ->where(
+                        'estado_clave',
+                        'con-mora'
+                    )
+                    ->count(),
+
+            'saldo_total' =>
+                round(
+                    (float) $filas->sum('total'),
+                    2
+                ),
+        ];
+
+
+        return view(
+            'dashboard.estado-cuenta',
+            compact(
+                'filas',
+                'busqueda',
+                'estado',
+                'resumenGeneral'
+            )
+        );
+    }
+
+
+    /**
+     * Construye la información consolidada
+     * correspondiente a un cliente.
+     */
+    private function construirFila(
+        Cliente $cliente,
+        Collection $recibos
+    ): array {
+
+        /*
+         * =========================================================
+         * SEPARACIÓN DE RECIBOS
+         * =========================================================
+         */
+
+        $pendientes = $recibos->filter(
+            function (Recibo $recibo) {
+
+                return $recibo->estado === 'PENDIENTE';
+            }
+        );
+
+
+        $pagados = $recibos->filter(
+            function (Recibo $recibo) {
+
+                return $recibo->estado === 'PAGADO';
+            }
+        );
+
+
+        $anulados = $recibos->filter(
+            function (Recibo $recibo) {
+
+                return $recibo->estado === 'ANULADO';
+            }
+        );
+
+
+        /*
+         * =========================================================
+         * ESTADO DEL CLIENTE
+         * =========================================================
+         *
+         * Reutilizamos la lógica oficial del modelo Recibo.
+         */
+        $tieneMora = $pendientes->contains(
+            function (Recibo $recibo) {
+
+                return $recibo->estaAtrasado();
+            }
+        );
+
 
         if ($tieneMora) {
+
             $estadoClave = 'con-mora';
             $estadoEtiqueta = 'Con mora';
+
         } elseif ($pendientes->isNotEmpty()) {
+
             $estadoClave = 'pendiente';
             $estadoEtiqueta = 'Pendiente';
+
         } else {
+
             $estadoClave = 'al-dia';
             $estadoEtiqueta = 'Al día';
         }
 
-        $montoPendiente = round(
-            $pendientes->sum(fn (Recibo $recibo) => (float) $recibo->monto),
-            2
-        );
 
         /*
-         * montoMora() y montoConMora() pertenecen a AQ-34.
+         * =========================================================
+         * MONTO ORIGINAL PENDIENTE
+         * =========================================================
+         */
+        $montoPendiente = round(
+            (float) $pendientes->sum(
+                fn (Recibo $recibo) =>
+                    (float) $recibo->monto
+            ),
+            2
+        );
+
+
+        /*
+         * =========================================================
+         * MORA TOTAL
+         * =========================================================
          */
         $mora = round(
-            $pendientes->sum(fn (Recibo $recibo) => $recibo->montoMora()),
+            (float) $pendientes->sum(
+                fn (Recibo $recibo) =>
+                    $recibo->montoMora()
+            ),
             2
         );
 
+
+        /*
+         * =========================================================
+         * TOTAL PENDIENTE
+         * =========================================================
+         *
+         * Incluye:
+         *
+         * monto original
+         * +
+         * mora vigente.
+         */
         $total = round(
-            $pendientes->sum(fn (Recibo $recibo) => $recibo->montoConMora()),
+            (float) $pendientes->sum(
+                fn (Recibo $recibo) =>
+                    $recibo->montoConMora()
+            ),
             2
         );
 
+
+        /*
+         * =========================================================
+         * CONTADORES DEL CLIENTE
+         * =========================================================
+         *
+         * Un cliente puede tener más de un contador.
+         */
+        $contadores = $cliente->contadores ?? collect();
+
+        $contadoresActivos = $contadores->filter(
+            fn ($contador) =>
+                (bool) $contador->activo
+        );
+
+
+        /*
+         * =========================================================
+         * SERVICIOS DEL CLIENTE
+         * =========================================================
+         *
+         * Servicio se mantiene únicamente como clasificación
+         * informativa del contador.
+         */
+        $servicios = $contadores
+            ->map(
+                fn ($contador) =>
+                    $contador->servicio?->nombre
+            )
+            ->filter()
+            ->unique()
+            ->values();
+
+
+        /*
+         * =========================================================
+         * ÚLTIMO RECIBO
+         * =========================================================
+         */
+        $ultimoRecibo = $recibos
+            ->sortByDesc('fecha_emision')
+            ->first();
+
+
+        /*
+         * =========================================================
+         * RESULTADO
+         * =========================================================
+         */
         return [
-            'cliente' => $cliente,
-            'estado_clave' => $estadoClave,
-            'estado_etiqueta' => $estadoEtiqueta,
-            'recibos_pendientes' => $pendientes->count(),
-            'monto_pendiente' => $montoPendiente,
-            'mora' => $mora,
-            'total' => $total,
+            'cliente' =>
+                $cliente,
+
+            'estado_clave' =>
+                $estadoClave,
+
+            'estado_etiqueta' =>
+                $estadoEtiqueta,
+
+            /*
+             * Contadores.
+             */
+            'contadores_total' =>
+                $contadores->count(),
+
+            'contadores_activos' =>
+                $contadoresActivos->count(),
+
+            /*
+             * Servicios informativos.
+             */
+            'servicios' =>
+                $servicios,
+
+            /*
+             * Recibos.
+             */
+            'total_recibos' =>
+                $recibos->count(),
+
+            'recibos_pendientes' =>
+                $pendientes->count(),
+
+            'recibos_pagados' =>
+                $pagados->count(),
+
+            'recibos_anulados' =>
+                $anulados->count(),
+
+            /*
+             * Valores financieros.
+             */
+            'monto_pendiente' =>
+                $montoPendiente,
+
+            'mora' =>
+                $mora,
+
+            'total' =>
+                $total,
+
+            /*
+             * Referencia al último recibo,
+             * útil para futuras acciones en la vista.
+             */
+            'ultimo_recibo' =>
+                $ultimoRecibo,
         ];
     }
 }

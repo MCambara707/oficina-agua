@@ -1,11 +1,12 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>
-        {{ $esComprobante ? 'Comprobante de pago' : 'Recibo de agua' }}
+        {{ $esComprobante ? 'Comprobante de pago' : 'Recibo de servicio' }}
         {{ $recibo->numero_recibo }}
     </title>
 
@@ -87,7 +88,14 @@
             color: #0b4f7c;
         }
 
+        .servicio-encabezado {
+            margin-top: 4px;
+            font-size: 13px;
+            color: #4b5563;
+        }
+
         .numero-recibo {
+            margin-top: 5px;
             font-size: 15px;
             color: #4b5563;
         }
@@ -114,6 +122,11 @@
         .estado-pendiente {
             background: #fef3c7;
             color: #92400e;
+        }
+
+        .estado-anulado {
+            background: #e5e7eb;
+            color: #374151;
         }
 
         .seccion {
@@ -205,6 +218,7 @@
         .fila-total {
             display: flex;
             justify-content: space-between;
+            gap: 20px;
             padding: 8px 0;
             border-bottom: 1px solid #e5e7eb;
             font-size: 14px;
@@ -314,6 +328,10 @@
             .documento-info h1 {
                 font-size: 21px;
                 margin-bottom: 4px;
+            }
+
+            .servicio-encabezado {
+                font-size: 11px;
             }
 
             .numero-recibo {
@@ -430,18 +448,32 @@
 <body>
 
 <div class="acciones">
-    <a href="{{ url()->previous() }}" class="btn btn-volver">
+
+    <a
+        href="{{ url()->previous() }}"
+        class="btn btn-volver"
+    >
         Volver
     </a>
 
-    <button type="button" class="btn btn-imprimir" onclick="window.print()">
+    <button
+        type="button"
+        class="btn btn-imprimir"
+        onclick="window.print()"
+    >
         Imprimir
     </button>
+
 </div>
+
 
 <main class="documento">
 
+    {{-- =========================================================
+         ENCABEZADO
+    ========================================================== --}}
     <header class="encabezado">
+
         <div>
             <img
                 src="{{ asset('img/branding/Logo_AquatechGt.png') }}"
@@ -451,28 +483,62 @@
         </div>
 
         <div class="documento-info">
+
             <h1>
-                {{ $esComprobante ? 'Comprobante de pago' : 'Recibo de agua potable' }}
+                {{ $esComprobante
+                    ? 'Comprobante de pago'
+                    : 'Recibo de servicio'
+                }}
             </h1>
+
+            <div class="servicio-encabezado">
+                {{ $servicio?->nombre ?? 'Servicio no asignado' }}
+            </div>
 
             <div class="numero-recibo">
                 No. {{ $recibo->numero_recibo }}
             </div>
 
             @if ($recibo->estado === 'PAGADO')
-                <span class="estado estado-pagado">PAGADO</span>
+
+                <span class="estado estado-pagado">
+                    PAGADO
+                </span>
+
+            @elseif ($recibo->estado === 'ANULADO')
+
+                <span class="estado estado-anulado">
+                    ANULADO
+                </span>
+
             @elseif ($estaAtrasado)
-                <span class="estado estado-mora">CON MORA</span>
+
+                <span class="estado estado-mora">
+                    CON MORA
+                </span>
+
             @else
-                <span class="estado estado-pendiente">PENDIENTE</span>
+
+                <span class="estado estado-pendiente">
+                    PENDIENTE
+                </span>
+
             @endif
+
         </div>
+
     </header>
 
+
+    {{-- =========================================================
+         DATOS DEL CLIENTE Y DEL SERVICIO
+    ========================================================== --}}
     <section class="seccion">
-        <h2>Datos del cliente</h2>
+
+        <h2>Datos del cliente y servicio</h2>
 
         <div class="grid">
+
             <div class="dato">
                 <strong>Cliente</strong>
                 {{ $cliente->nombre }}
@@ -494,11 +560,28 @@
             </div>
 
             <div class="dato">
+                <strong>Servicio</strong>
+                {{ $servicio?->nombre ?? 'No asignado' }}
+            </div>
+
+            <div class="dato">
+                <strong>Sector</strong>
+                {{ $contador->sector ?? 'No registrado' }}
+            </div>
+
+            <div class="dato">
                 <strong>Dirección del servicio</strong>
+
                 {{ $contador->direccion_servicio
                     ?? $contador->punto_referencia
                     ?? $contador->sector
-                    ?? 'No registrada' }}
+                    ?? 'No registrada'
+                }}
+            </div>
+
+            <div class="dato">
+                <strong>Punto de referencia</strong>
+                {{ $contador->punto_referencia ?? 'No registrado' }}
             </div>
 
             <div class="dato">
@@ -515,13 +598,21 @@
                 <strong>Período</strong>
                 {{ \Carbon\Carbon::parse($lectura->periodo)->format('m/Y') }}
             </div>
+
         </div>
+
     </section>
 
+
+    {{-- =========================================================
+         DETALLE DEL CONSUMO
+    ========================================================== --}}
     <section class="seccion">
+
         <h2>Detalle del consumo</h2>
 
         <table class="tabla">
+
             <thead>
                 <tr>
                     <th>Lectura anterior</th>
@@ -534,88 +625,195 @@
 
             <tbody>
                 <tr>
-                    <td>{{ number_format((float) $lectura->lectura_anterior, 3) }}</td>
-                    <td>{{ number_format((float) $lectura->lectura_actual, 3) }}</td>
-                    <td>{{ number_format((float) $lectura->consumo_m3, 3) }} m³</td>
 
                     <td>
-                        {{ $tarifa->nombre }}
-                        <br>
-                        <small>{{ $tarifa->tipo }}</small>
+                        {{ number_format(
+                            (float) $lectura->lectura_anterior,
+                            3
+                        ) }}
+                    </td>
+
+                    <td>
+                        {{ number_format(
+                            (float) $lectura->lectura_actual,
+                            3
+                        ) }}
+                    </td>
+
+                    <td>
+                        {{ number_format(
+                            (float) $lectura->consumo_m3,
+                            3
+                        ) }} m³
+                    </td>
+
+                    <td>
+                        {{ $tarifa?->nombre ?? 'No registrada' }}
+
+                        @if ($tarifa?->tipo)
+                            <br>
+                            <small>
+                                {{ $tarifa->tipo }}
+                            </small>
+                        @endif
                     </td>
 
                     <td class="text-end">
-                        Q{{ number_format((float) $recibo->monto, 2) }}
+                        Q{{ number_format(
+                            (float) $recibo->monto,
+                            2
+                        ) }}
                     </td>
+
                 </tr>
             </tbody>
+
         </table>
+
     </section>
 
+
+    {{-- =========================================================
+         ESTADO DE CUENTA
+    ========================================================== --}}
     <section class="seccion">
+
         <h2>Estado de cuenta del cliente</h2>
 
         <div class="resumen">
+
             <div class="resumen-item">
                 <span>Pendientes</span>
-                <strong>{{ $resumenCliente['pendientes'] }}</strong>
+
+                <strong>
+                    {{ $resumenCliente['pendientes'] }}
+                </strong>
             </div>
 
             <div class="resumen-item">
                 <span>Con mora</span>
-                <strong>{{ $resumenCliente['con_mora'] }}</strong>
+
+                <strong>
+                    {{ $resumenCliente['con_mora'] }}
+                </strong>
             </div>
 
             <div class="resumen-item">
                 <span>Pagados</span>
-                <strong>{{ $resumenCliente['pagados'] }}</strong>
+
+                <strong>
+                    {{ $resumenCliente['pagados'] }}
+                </strong>
             </div>
 
             <div class="resumen-item">
                 <span>Saldo pendiente</span>
+
                 <strong>
-                    Q{{ number_format($resumenCliente['saldo_pendiente'], 2) }}
+                    Q{{ number_format(
+                        $resumenCliente['saldo_pendiente'],
+                        2
+                    ) }}
                 </strong>
             </div>
+
         </div>
+
     </section>
 
+
+    {{-- =========================================================
+         TOTALES
+    ========================================================== --}}
     <div class="totales">
 
         <div class="fila-total">
             <span>Monto del recibo</span>
+
             <strong>
-                Q{{ number_format((float) $recibo->monto, 2) }}
+                Q{{ number_format(
+                    (float) $recibo->monto,
+                    2
+                ) }}
             </strong>
         </div>
 
-        <div class="fila-total">
-            <span>Mora</span>
-            <strong>
-                Q{{ number_format($moraActual, 2) }}
-            </strong>
-        </div>
 
-        @if ($estaAtrasado)
+        {{-- Si ya fue pagado utilizamos los valores históricos
+             almacenados en el pago, no la mora actual. --}}
+        @if ($esComprobante && $ultimoPago)
+
             <div class="fila-total">
-                <span>Días de atraso</span>
-                <strong>{{ $diasAtraso }}</strong>
-            </div>
-        @endif
+                <span>Mora pagada</span>
 
-        <div class="fila-total final">
-            <span>Total</span>
-            <span>
-                Q{{ number_format($totalActual, 2) }}
-            </span>
-        </div>
+                <strong>
+                    Q{{ number_format(
+                        $moraPagada,
+                        2
+                    ) }}
+                </strong>
+            </div>
+
+            <div class="fila-total final">
+                <span>Total pagado</span>
+
+                <span>
+                    Q{{ number_format(
+                        $totalPagado,
+                        2
+                    ) }}
+                </span>
+            </div>
+
+        @else
+
+            <div class="fila-total">
+                <span>Mora</span>
+
+                <strong>
+                    Q{{ number_format(
+                        $moraActual,
+                        2
+                    ) }}
+                </strong>
+            </div>
+
+            @if ($estaAtrasado)
+
+                <div class="fila-total">
+                    <span>Días de atraso</span>
+
+                    <strong>
+                        {{ $diasAtraso }}
+                    </strong>
+                </div>
+
+            @endif
+
+            <div class="fila-total final">
+                <span>Total a pagar</span>
+
+                <span>
+                    Q{{ number_format(
+                        $totalActual,
+                        2
+                    ) }}
+                </span>
+            </div>
+
+        @endif
 
     </div>
 
+
+    {{-- =========================================================
+         COMPROBANTE DE PAGO
+    ========================================================== --}}
     @if ($esComprobante && $ultimoPago)
+
         <section class="comprobante">
 
-            <h2>Comprobante de pago</h2>
+            <h2>Información del pago</h2>
 
             <div class="grid">
 
@@ -624,45 +822,92 @@
 
                     {{ $ultimoPago->fecha_pago
                         ? $ultimoPago->fecha_pago->format('d/m/Y H:i')
-                        : 'No registrada' }}
+                        : 'No registrada'
+                    }}
                 </div>
 
                 <div class="dato">
-                    <strong>Monto pagado</strong>
+                    <strong>Monto original</strong>
 
-                    Q{{ number_format((float) $ultimoPago->monto, 2) }}
+                    Q{{ number_format(
+                        (float) $recibo->monto,
+                        2
+                    ) }}
+                </div>
+
+                <div class="dato">
+                    <strong>Mora pagada</strong>
+
+                    Q{{ number_format(
+                        $moraPagada,
+                        2
+                    ) }}
+                </div>
+
+                <div class="dato">
+                    <strong>Total pagado</strong>
+
+                    Q{{ number_format(
+                        $totalPagado,
+                        2
+                    ) }}
                 </div>
 
                 <div class="dato">
                     <strong>Método de pago</strong>
 
-                    {{ $ultimoPago->metodoPago?->nombre ?? 'No registrado' }}
+                    {{ $ultimoPago->metodoPago?->nombre
+                        ?? 'No registrado'
+                    }}
                 </div>
 
                 <div class="dato">
                     <strong>Referencia</strong>
 
-                    {{ $ultimoPago->referencia ?? 'Sin referencia' }}
+                    {{ $ultimoPago->referencia
+                        ?: 'Sin referencia'
+                    }}
                 </div>
 
                 <div class="dato">
                     <strong>Registrado por</strong>
 
-                    {{ $ultimoPago->usuarioRegistro?->nombre ?? 'Sistema' }}
+                    {{ $ultimoPago->usuarioRegistro?->nombre
+                        ?? 'Sistema'
+                    }}
                 </div>
+
+                @if ($ultimoPago->observacion)
+                    <div class="dato">
+                        <strong>Observación</strong>
+
+                        {{ $ultimoPago->observacion }}
+                    </div>
+                @endif
 
             </div>
 
         </section>
+
     @endif
 
+
+    {{-- =========================================================
+         PIE
+    ========================================================== --}}
     <footer class="pie">
+
         AquaTech GT — Control y eficiencia hídrica
+
         <br>
-        Documento generado por el Sistema de Gestión de la Oficina del Agua.
+
+        Documento generado por el Sistema de Gestión
+        de la Oficina del Agua.
+
     </footer>
 
 </main>
 
 </body>
+
 </html>

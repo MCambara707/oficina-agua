@@ -8,6 +8,10 @@
 
 @section('content')
 
+    @if (session('error'))
+        <div class="alert alert-danger">{{ session('error') }}</div>
+    @endif
+
     <div class="card">
         <div class="card-body">
 
@@ -38,6 +42,7 @@
                         id="cliente_id"
                         class="form-control @error('cliente_id') is-invalid @enderror"
                         required
+                        @disabled($contador->lecturas_exists)
                     >
                         @foreach ($clientes as $cliente)
                             <option
@@ -48,6 +53,11 @@
                             </option>
                         @endforeach
                     </select>
+
+                    @if ($contador->lecturas_exists)
+                        <input type="hidden" name="cliente_id" value="{{ $contador->cliente_id }}">
+                        <small class="form-text text-muted">El cliente no puede cambiar porque este contador tiene historial.</small>
+                    @endif
 
                     @error('cliente_id')
                         <span class="invalid-feedback">{{ $message }}</span>
@@ -134,6 +144,25 @@
                     >
 
                     @error('numero_registro')
+                        <span class="invalid-feedback">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div class="form-group">
+                    <label for="lectura_inicial">Lectura inicial (m³)</label>
+                    <input type="number" name="lectura_inicial" id="lectura_inicial"
+                           class="form-control @error('lectura_inicial') is-invalid @enderror"
+                           value="{{ $contador->lecturas_exists ? $contador->lectura_inicial : old('lectura_inicial', $contador->lectura_inicial) }}"
+                           min="0" max="999999999.999" step="0.001" @readonly($contador->lecturas_exists)>
+                    <small class="form-text text-muted">
+                        @if ($contador->lecturas_exists)
+                            La base está bloqueada por el historial. Las nuevas lecturas utilizan la última lectura registrada.
+                        @else
+                            Use 0 solo si el contador inicia en cero. Si la base se desconoce, déjela vacía:
+                            no podrá registrar la primera lectura hasta establecerla.
+                        @endif
+                    </small>
+                    @error('lectura_inicial')
                         <span class="invalid-feedback">{{ $message }}</span>
                     @enderror
                 </div>

@@ -49,10 +49,15 @@
                     <dt class="col-sm-3">Dirección de servicio</dt>
                     <dd class="col-sm-9">{{ $contadorSeleccionado->direccion_servicio }}</dd>
 
-                    <dt class="col-sm-3">Última lectura registrada</dt>
-                    <dd class="col-sm-9">{{ number_format($lecturaAnterior, 3) }} m³</dd>
+                    <dt class="col-sm-3">Lectura anterior / inicial</dt>
+                    <dd class="col-sm-9">{{ $lecturaAnterior === null ? 'Sin lectura inicial registrada' : number_format($lecturaAnterior, 3).' m³' }}</dd>
                 </dl>
 
+                @if ($lecturaAnterior === null)
+                    <div class="alert alert-warning">
+                        Falta la lectura inicial. Administrador o Secretaria deben registrarla en Contadores antes de la primera lectura.
+                    </div>
+                @else
                 <form action="{{ route('lecturas.store') }}" method="POST">
                     @csrf
                     <input type="hidden" name="contador_id" value="{{ $contadorSeleccionado->id }}">
@@ -81,6 +86,7 @@
                     <button type="submit" class="btn btn-primary">Guardar lectura</button>
                     <a href="{{ route('lecturas.index') }}" class="btn btn-secondary">Cancelar</a>
                 </form>
+                @endif
             @endif
 
         </div>

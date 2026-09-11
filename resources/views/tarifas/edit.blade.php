@@ -9,6 +9,7 @@
 @section('content')
 
     @php
+        $tipoBloqueado = $tieneRecibos || $tieneContadores;
         $tiposBase = [
             '1/2 paja',
             '1 paja',
@@ -35,14 +36,14 @@
                 (int) $coincidencia[1];
         }
 
-        $tipoSelectorActual = old(
+        $tipoSelectorActual = $tipoBloqueado ? ($esTipoBase ? $tarifa->tipo : 'otra_cantidad') : old(
             'tipo_selector',
             $esTipoBase
                 ? $tarifa->tipo
                 : 'otra_cantidad'
         );
 
-        $cantidadPajasActual = old(
+        $cantidadPajasActual = $tipoBloqueado ? $cantidadActual : old(
             'cantidad_pajas',
             $cantidadActual
         );
@@ -50,6 +51,18 @@
 
     <div class="card">
         <div class="card-body">
+
+            @if ($tieneRecibos)
+                <div class="alert alert-info">
+                    Esta tarifa tiene recibos emitidos. Su nombre, tipo, capacidad, precios, mora y fecha inicial
+                    se conservan para proteger el historial. Para cambiarlos, cree una nueva tarifa.
+                    Puede ajustar la fecha final sin excluir recibos existentes o desactivar la tarifa.
+                </div>
+            @elseif ($tieneContadores)
+                <div class="alert alert-info">
+                    El tipo está protegido porque hay contadores asignados a esta tarifa.
+                </div>
+            @endif
 
             @if ($errors->any())
                 <div class="alert alert-danger">
@@ -78,7 +91,8 @@
                         name="nombre"
                         id="nombre"
                         class="form-control"
-                        value="{{ old('nombre', $tarifa->nombre) }}"
+                        value="{{ $tieneRecibos ? $tarifa->nombre : old('nombre', $tarifa->nombre) }}"
+                        @readonly($tieneRecibos)
                         maxlength="100"
                         required
                     >
@@ -94,6 +108,7 @@
                         id="tipo_selector"
                         class="form-control"
                         required
+                        @disabled($tipoBloqueado)
                     >
                         <option value="">
                             Seleccione un tipo
@@ -127,6 +142,9 @@
                             Otra cantidad
                         </option>
                     </select>
+                    @if ($tipoBloqueado)
+                        <input type="hidden" name="tipo_selector" value="{{ $tipoSelectorActual }}">
+                    @endif
                 </div>
 
                 <div
@@ -146,6 +164,7 @@
                         min="3"
                         step="1"
                         value="{{ $cantidadPajasActual }}"
+                        @readonly($tipoBloqueado)
                         placeholder="Ej. 3"
                     >
 
@@ -163,13 +182,17 @@
                         type="text"
                         id="capacidad_visual"
                         class="form-control"
-                        value="{{ (int) $tarifa->capacidad }} m³"
+                        value="{{ number_format((float) $tarifa->capacidad, 3, '.', '') }} m³"
                         readonly
                     >
 
                     <small class="form-text text-muted">
-                        Se calcula automáticamente según la cantidad de pajas.
-                        1 paja equivale a 60 m³ mensuales.
+                        @if ($tieneRecibos)
+                            Se conserva la capacidad utilizada en los recibos históricos.
+                        @else
+                            Se calcula automáticamente según la cantidad de pajas.
+                            1 paja equivale a 60 m³ mensuales.
+                        @endif
                     </small>
                 </div>
 
@@ -185,7 +208,8 @@
                         class="form-control"
                         step="0.01"
                         min="0.01"
-                        value="{{ old('precio_por_m3', $tarifa->precio_por_m3) }}"
+                        value="{{ $tieneRecibos ? $tarifa->precio_por_m3 : old('precio_por_m3', $tarifa->precio_por_m3) }}"
+                        @readonly($tieneRecibos)
                         required
                     >
 
@@ -206,7 +230,8 @@
                         class="form-control"
                         step="0.01"
                         min="0.01"
-                        value="{{ old('precio_exceso_m3', $tarifa->precio_exceso_m3) }}"
+                        value="{{ $tieneRecibos ? $tarifa->precio_exceso_m3 : old('precio_exceso_m3', $tarifa->precio_exceso_m3) }}"
+                        @readonly($tieneRecibos)
                         required
                     >
 
@@ -239,7 +264,8 @@
                         step="0.01"
                         min="0.01"
                         max="100"
-                        value="{{ old('mora_porcentaje', $tarifa->mora_porcentaje) }}"
+                        value="{{ $tieneRecibos ? $tarifa->mora_porcentaje : old('mora_porcentaje', $tarifa->mora_porcentaje) }}"
+                        @readonly($tieneRecibos)
                         placeholder="Ej. 5.00"
                     >
                 </div>
@@ -256,7 +282,8 @@
                         class="form-control"
                         step="0.01"
                         min="0.01"
-                        value="{{ old('mora_monto_fijo', $tarifa->mora_monto_fijo) }}"
+                        value="{{ $tieneRecibos ? $tarifa->mora_monto_fijo : old('mora_monto_fijo', $tarifa->mora_monto_fijo) }}"
+                        @readonly($tieneRecibos)
                         placeholder="Ej. 10.00"
                     >
 
@@ -281,7 +308,8 @@
                         name="vigente_desde"
                         id="vigente_desde"
                         class="form-control"
-                        value="{{ old('vigente_desde', $tarifa->vigente_desde->format('Y-m-d')) }}"
+                        value="{{ $tieneRecibos ? $tarifa->vigente_desde->format('Y-m-d') : old('vigente_desde', $tarifa->vigente_desde->format('Y-m-d')) }}"
+                        @readonly($tieneRecibos)
                         required
                     >
                 </div>
@@ -358,8 +386,12 @@
                 document.getElementById('capacidad_visual');
 
             const capacidadPorPaja = 60;
+            const tieneRecibos = @json($tieneRecibos);
 
             function calcularCapacidad() {
+                if (tieneRecibos) {
+                    return;
+                }
                 let capacidadCalculada = null;
 
                 if (selector.value === '1/2 paja') {

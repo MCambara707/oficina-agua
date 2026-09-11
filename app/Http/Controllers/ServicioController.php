@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Servicio;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ServicioController extends Controller
 {
@@ -68,10 +69,21 @@ class ServicioController extends Controller
     public function destroy(Servicio $servicio)
     {
         try {
-            $servicio->delete();
+            $eliminado = DB::transaction(function () use ($servicio) {
+                $actual = Servicio::whereKey($servicio->id)->lockForUpdate()->firstOrFail();
+                if ($actual->contadores()->exists()) {
+                    return false;
+                }
+
+                return $actual->delete();
+            }, 3);
+
             return redirect()
                 ->route('servicios.index')
-                ->with('exito', 'Servicio eliminado correctamente.');
+                ->with(
+                    $eliminado ? 'exito' : 'error',
+                    $eliminado ? 'Servicio eliminado correctamente.' : 'No se puede eliminar: hay contadores usando este servicio. Desactívalo en su lugar.'
+                );
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()
                 ->route('servicios.index')
