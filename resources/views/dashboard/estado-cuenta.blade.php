@@ -4,12 +4,12 @@
 
 @section('content_header')
 
-    <div>
+    <div class="estado-cuenta-header">
         <h1 class="mb-0">
             Estado de cuenta
         </h1>
 
-        <small class="text-muted">
+        <small class="estado-cuenta-texto-secundario">
             Consulta de saldos, mora y situación de pago de los clientes.
         </small>
     </div>
@@ -38,9 +38,7 @@
                 class="btn-close"
                 data-bs-dismiss="alert"
                 aria-label="Cerrar"
-            >
-            </button>
-
+            ></button>
         </div>
 
     @endif
@@ -61,9 +59,7 @@
                 class="btn-close"
                 data-bs-dismiss="alert"
                 aria-label="Cerrar"
-            >
-            </button>
-
+            ></button>
         </div>
 
     @endif
@@ -73,7 +69,7 @@
          FILTROS
     ========================================================== --}}
 
-    <div class="card mb-4">
+    <div class="card mb-4 estado-cuenta-card estado-filtros-card">
 
         <div class="card-header">
 
@@ -133,7 +129,7 @@
                             <select
                                 name="estado"
                                 id="estado"
-                                class="form-control"
+                                class="form-select"
                             >
 
                                 <option value="">
@@ -220,26 +216,30 @@
          RESUMEN GENERAL
     ========================================================== --}}
 
-    <div class="row">
+    <div class="row g-3 mb-4 estado-cuenta-resumen">
 
         {{-- CLIENTES --}}
         <div class="col-12 col-sm-6 col-lg-3">
 
-            <div class="small-box bg-light">
+            <div
+                class="small-box
+                       estado-resumen-card
+                       estado-resumen-clientes"
+            >
 
                 <div class="inner">
 
-                    <h3>
+                    <h3 class="estado-resumen-valor">
                         {{ $resumenGeneral['clientes'] }}
                     </h3>
 
-                    <p>
+                    <p class="estado-resumen-etiqueta">
                         Clientes mostrados
                     </p>
 
                 </div>
 
-                <div class="icon">
+                <div class="icon estado-resumen-icono">
                     <i class="fas fa-users"></i>
                 </div>
 
@@ -251,21 +251,28 @@
         {{-- AL DÍA --}}
         <div class="col-12 col-sm-6 col-lg-3">
 
-            <div class="small-box bg-light">
+            <div
+                class="small-box
+                       estado-resumen-card
+                       estado-resumen-al-dia"
+            >
 
                 <div class="inner">
 
-                    <h3 class="text-success">
+                    <h3
+                        class="estado-resumen-valor
+                               estado-resumen-valor-exito"
+                    >
                         {{ $resumenGeneral['al_dia'] }}
                     </h3>
 
-                    <p>
+                    <p class="estado-resumen-etiqueta">
                         Al día
                     </p>
 
                 </div>
 
-                <div class="icon">
+                <div class="icon estado-resumen-icono">
                     <i class="fas fa-check-circle"></i>
                 </div>
 
@@ -277,21 +284,28 @@
         {{-- PENDIENTES --}}
         <div class="col-12 col-sm-6 col-lg-3">
 
-            <div class="small-box bg-light">
+            <div
+                class="small-box
+                       estado-resumen-card
+                       estado-resumen-pendientes"
+            >
 
                 <div class="inner">
 
-                    <h3 class="text-warning">
+                    <h3
+                        class="estado-resumen-valor
+                               estado-resumen-valor-advertencia"
+                    >
                         {{ $resumenGeneral['pendientes'] }}
                     </h3>
 
-                    <p>
+                    <p class="estado-resumen-etiqueta">
                         Pendientes
                     </p>
 
                 </div>
 
-                <div class="icon">
+                <div class="icon estado-resumen-icono">
                     <i class="fas fa-clock"></i>
                 </div>
 
@@ -303,21 +317,28 @@
         {{-- CON MORA --}}
         <div class="col-12 col-sm-6 col-lg-3">
 
-            <div class="small-box bg-light">
+            <div
+                class="small-box
+                       estado-resumen-card
+                       estado-resumen-mora"
+            >
 
                 <div class="inner">
 
-                    <h3 class="text-danger">
+                    <h3
+                        class="estado-resumen-valor
+                               estado-resumen-valor-peligro"
+                    >
                         {{ $resumenGeneral['con_mora'] }}
                     </h3>
 
-                    <p>
+                    <p class="estado-resumen-etiqueta">
                         Con mora
                     </p>
 
                 </div>
 
-                <div class="icon">
+                <div class="icon estado-resumen-icono">
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
 
@@ -332,24 +353,23 @@
          SALDO GENERAL
     ========================================================== --}}
 
-    <div class="card mb-4">
+    <div class="card mb-4 estado-cuenta-card estado-saldo-card">
 
         <div
             class="card-body
                    d-flex flex-column flex-md-row
-                   flex-wrap gap-2 justify-content-between align-items-md-center"
+                   flex-wrap gap-2
+                   justify-content-between
+                   align-items-md-center"
         >
 
             <div>
 
-                <small class="text-muted">
+                <small class="estado-cuenta-texto-secundario">
                     Saldo pendiente de los clientes mostrados
                 </small>
 
-                <div
-                    class="font-weight-bold text-primary"
-                    style="font-size: 1.8rem;"
-                >
+                <div class="estado-saldo-total">
                     Q{{ number_format(
                         $resumenGeneral['saldo_total'],
                         2
@@ -358,7 +378,11 @@
 
             </div>
 
-            <div class="mt-3 mt-md-0 text-muted">
+
+            <div
+                class="mt-3 mt-md-0
+                       estado-cuenta-texto-secundario"
+            >
 
                 <i class="fas fa-info-circle me-1"></i>
 
@@ -375,7 +399,7 @@
          ESTADO DE CUENTA POR CLIENTE
     ========================================================== --}}
 
-    <div class="card">
+    <div class="card estado-cuenta-card estado-tabla-card">
 
         <div class="card-header">
 
@@ -397,20 +421,29 @@
                 <table
                     class="table table-bordered
                            table-striped table-hover
-                           align-middle mb-0"
+                           align-middle mb-0
+                           estado-cuenta-table"
                 >
 
                     <thead>
 
                         <tr>
 
-                            <th>Cliente</th>
+                            <th>
+                                Cliente
+                            </th>
 
-                            <th>DPI</th>
+                            <th>
+                                DPI
+                            </th>
 
-                            <th>Contadores</th>
+                            <th>
+                                Contadores
+                            </th>
 
-                            <th>Servicios</th>
+                            <th>
+                                Servicios
+                            </th>
 
                             <th class="text-center">
                                 Estado
@@ -424,21 +457,21 @@
                                 Pagados
                             </th>
 
-                            <th class="text-right">
+                            <th class="text-end">
                                 Monto pendiente
                             </th>
 
-                            <th class="text-right">
+                            <th class="text-end">
                                 Mora
                             </th>
 
-                            <th class="text-right">
+                            <th class="text-end">
                                 Total
                             </th>
 
                             <th
-                                class="text-center"
-                                style="min-width: 160px;"
+                                class="text-center
+                                       estado-columna-acciones"
                             >
                                 Acciones
                             </th>
@@ -456,9 +489,11 @@
 
                                 $cliente = $fila['cliente'];
 
-                                $contadores = $cliente->contadores;
+                                $contadores =
+                                    $cliente->contadores;
 
-                                $servicios = $fila['servicios'];
+                                $servicios =
+                                    $fila['servicios'];
 
                                 $ultimoRecibo =
                                     $fila['ultimo_recibo'];
@@ -479,9 +514,13 @@
 
                                         <br>
 
-                                        <small class="text-muted">
+                                        <small
+                                            class="estado-cuenta-texto-secundario"
+                                        >
 
-                                            <i class="fas fa-phone me-1"></i>
+                                            <i
+                                                class="fas fa-phone me-1"
+                                            ></i>
 
                                             {{ $cliente->telefono }}
 
@@ -539,7 +578,9 @@
 
                                     @else
 
-                                        <span class="text-muted">
+                                        <span
+                                            class="estado-cuenta-texto-secundario"
+                                        >
                                             Sin contador
                                         </span>
 
@@ -566,7 +607,9 @@
 
                                     @else
 
-                                        <span class="text-muted">
+                                        <span
+                                            class="estado-cuenta-texto-secundario"
+                                        >
                                             No asignado
                                         </span>
 
@@ -646,7 +689,7 @@
 
 
                                 {{-- MONTO PENDIENTE --}}
-                                <td class="text-right">
+                                <td class="text-end">
 
                                     Q{{ number_format(
                                         $fila['monto_pendiente'],
@@ -657,7 +700,7 @@
 
 
                                 {{-- MORA --}}
-                                <td class="text-right">
+                                <td class="text-end">
 
                                     @if ($fila['mora'] > 0)
 
@@ -680,7 +723,7 @@
 
 
                                 {{-- TOTAL --}}
-                                <td class="text-right">
+                                <td class="text-end">
 
                                     <strong>
 
@@ -699,7 +742,8 @@
 
                                     <div
                                         class="d-flex flex-column
-                                               gap-2 justify-content-center"
+                                               gap-2
+                                               justify-content-center"
                                     >
 
                                         @if (
@@ -756,7 +800,9 @@
                                             && ! $ultimoRecibo
                                         )
 
-                                            <span class="text-muted">
+                                            <span
+                                                class="estado-cuenta-texto-secundario"
+                                            >
                                                 Sin movimientos
                                             </span>
 
@@ -780,12 +826,13 @@
 
                                     <i
                                         class="fas fa-info-circle
-                                               fa-2x
-                                               d-block mb-2
-                                               text-muted"
+                                               fa-2x d-block mb-2
+                                               estado-cuenta-texto-secundario"
                                     ></i>
 
-                                    <span class="text-muted">
+                                    <span
+                                        class="estado-cuenta-texto-secundario"
+                                    >
 
                                         @if (
                                             $busqueda !== ''

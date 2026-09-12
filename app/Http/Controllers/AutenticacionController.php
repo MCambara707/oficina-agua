@@ -8,6 +8,18 @@ use Illuminate\Support\Facades\Auth;
 class AutenticacionController extends Controller
 {
     /**
+     * Envía al visitante al login o al módulo operativo correspondiente.
+     */
+    public function inicio(Request $request)
+    {
+        if (! $request->user()) {
+            return redirect()->route('login');
+        }
+
+        return redirect()->route($this->rutaInicial($request));
+    }
+
+    /**
      * Muestra el formulario de inicio de sesión.
      */
     public function mostrarLogin()
@@ -44,7 +56,17 @@ class AutenticacionController extends Controller
              */
             $request->session()->regenerate();
 
-            return redirect()->intended('/admin-demo');
+            // Una sesión anterior puede conservar la página demo ya retirada.
+            $rutaPendiente = parse_url(
+                $request->session()->get('url.intended', ''),
+                PHP_URL_PATH
+            );
+
+            if (rtrim((string) $rutaPendiente, '/') === '/admin-demo') {
+                $request->session()->forget('url.intended');
+            }
+
+            return redirect()->intended(route($this->rutaInicial($request)));
         }
 
         return back()
@@ -72,5 +94,17 @@ class AutenticacionController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    /**
+     * La autorización del módulo sigue a cargo de su middleware de roles.
+     */
+    private function rutaInicial(Request $request): string
+    {
+        return match ($request->user()->rol?->nombre) {
+            'Administrador', 'Secretaria' => 'dashboard.estado-cuenta',
+            'Lector' => 'lecturas.index',
+            default => abort(403, 'No tiene permisos para acceder a esta sección.'),
+        };
     }
 }
