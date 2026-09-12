@@ -3,7 +3,6 @@
 use ColorlibHQ\AdminLte\Menu\Filters\ActiveFilter;
 use ColorlibHQ\AdminLte\Menu\Filters\GateFilter;
 use ColorlibHQ\AdminLte\Menu\Filters\HrefFilter;
-use ColorlibHQ\AdminLte\Menu\Filters\SearchFilter;
 
 return [
 
@@ -13,7 +12,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'title' => 'AdminLTE 4',
+    'title' => 'Sistema de Gestión — Oficina del Agua',
     'title_prefix' => '',
     'title_postfix' => '',
 
@@ -45,16 +44,16 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'logo' => '<b>Admin</b>LTE',
+    'logo' => 'AquaTech',
 
     'logo_img' =>
-        'vendor/adminlte/img/AdminLTELogo.png',
+        'img/branding/Logo_AquatechGt.png',
 
     'logo_img_class' =>
-        'brand-image opacity-75 shadow',
+        '',
 
     'logo_img_alt' =>
-        'AdminLTE Logo',
+        'AquaTech GT',
 
 
     /*
@@ -70,10 +69,10 @@ return [
         'img' => [
 
             'path' =>
-                'vendor/adminlte/img/AdminLTELogo.png',
+                'img/branding/Logo_AquatechGt.png',
 
             'alt' =>
-                'Auth Logo',
+                'AquaTech GT',
 
             'class' =>
                 '',
@@ -141,7 +140,7 @@ return [
         . '</a>. Todos los derechos reservados.',
 
     'footer_right' =>
-        'Anything you want',
+        'Sistema de Gestión — Oficina del Agua',
 
     'preloader' => false,
 
@@ -158,16 +157,16 @@ return [
     */
 
     'sidebar_docs_url' =>
-        '/docs',
+        null,
 
-    'demo' => true,
+    'demo' => false,
 
     'demo_middleware' => [
         'web',
         'auth',
     ],
 
-    'docs' => true,
+    'docs' => false,
 
     'docs_middleware' => [
         'web',
@@ -192,8 +191,12 @@ return [
     'sidebar_collapse_auto_size' =>
         false,
 
+    /*
+     * El sidebar ahora es claro, por eso usamos
+     * scrollbar oscuro para mantener contraste.
+     */
     'sidebar_scrollbar_theme' =>
-        'os-theme-light',
+        'os-theme-dark',
 
     'sidebar_scrollbar_auto_hide' =>
         'leave',
@@ -205,8 +208,12 @@ return [
     |--------------------------------------------------------------------------
     */
 
+    /*
+     * AQ-43:
+     * El menú lateral ahora utiliza fondo claro #F4F8FB.
+     */
     'sidebar_theme' =>
-        'dark',
+        'light',
 
     'primary_color' =>
         null,
@@ -234,7 +241,7 @@ return [
         '',
 
     'classes_brand_text' =>
-        'fw-light',
+        '',
 
     'classes_content_wrapper' =>
         '',
@@ -245,8 +252,11 @@ return [
     'classes_content' =>
         '',
 
+    /*
+     * Clase propia utilizada para aplicar la paleta AquaTech.
+     */
     'classes_sidebar' =>
-        'bg-body-secondary shadow',
+        'aquatech-sidebar shadow-sm',
 
     'classes_sidebar_nav' =>
         '',
@@ -356,12 +366,23 @@ return [
                 'ver-modulos-administrativos',
         ],
 
+
         [
-            'text' => 'Historial de recibos',
-            'route' => 'recibos.index',
-            'icon' => 'bi bi-receipt',
-            'active' => ['recibos*'],
-            'can' => 'ver-modulos-administrativos',
+            'text' =>
+                'Historial de recibos',
+
+            'route' =>
+                'recibos.index',
+
+            'icon' =>
+                'bi bi-receipt',
+
+            'active' => [
+                'recibos*',
+            ],
+
+            'can' =>
+                'ver-modulos-administrativos',
         ],
 
 
@@ -591,18 +612,15 @@ return [
     |
     | Estos filtros permiten:
     |
-    | - marcar la opción activa;
-    | - aplicar permisos mediante "can";
     | - resolver rutas y URLs;
-    | - utilizar búsqueda cuando corresponda.
+    | - marcar la opción activa;
+    | - aplicar permisos mediante "can".
     |
     */
 
     'filters' => [
 
         HrefFilter::class,
-
-        SearchFilter::class,
 
         ActiveFilter::class,
 

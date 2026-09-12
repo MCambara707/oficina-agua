@@ -21,10 +21,9 @@ use App\Http\Controllers\UsuarioController;
 |--------------------------------------------------------------------------
 */
 
-// Página principal.
-Route::get('/', function () {
-    return view('welcome');
-});
+// Entrada al sistema según la sesión y el rol del usuario.
+Route::get('/', [AutenticacionController::class, 'inicio'])
+    ->name('inicio');
 
 
 // AQ-69:
@@ -70,20 +69,6 @@ Route::middleware(['auth', 'auditoria'])->group(function () {
         '/logout',
         [AutenticacionController::class, 'cerrarSesion']
     )->name('logout');
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Panel general
-    |--------------------------------------------------------------------------
-    */
-
-    /*
-     * Disponible para cualquier usuario autenticado.
-     */
-    Route::get('/admin-demo', function () {
-        return view('admin-demo');
-    })->name('admin.demo');
 
 
     /*
