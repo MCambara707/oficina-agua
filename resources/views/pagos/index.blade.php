@@ -153,7 +153,7 @@
                                    d-flex align-items-end mt-2 mt-lg-0"
                         >
 
-                            
+                            <a
                                 href="{{ route('pagos.index') }}"
                                 class="btn btn-outline-secondary"
                             >
@@ -394,7 +394,7 @@
                                                flex-wrap gap-2 justify-content-center"
                                     >
 
-                                        
+                                        <a
                                             href="{{ route(
                                                 'recibos.imprimir',
                                                 $recibo
@@ -408,8 +408,7 @@
                                             Recibo
                                         </a>
 
-
-                                        
+                                        <a
                                             href="{{ route(
                                                 'pagos.create',
                                                 $recibo
