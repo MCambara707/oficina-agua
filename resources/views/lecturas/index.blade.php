@@ -36,7 +36,7 @@
 
                 @if (session('recibo_generado_id'))
                     <div class="mt-2 mt-md-0 me-md-4">
-                        <a
+                        
                             href="{{ route(
                                 'recibos.imprimir',
                                 session('recibo_generado_id')
@@ -98,7 +98,7 @@
 
                 <div class="mt-2 mt-md-0">
 
-                    <a
+                    
                         href="{{ route('lecturas.create') }}"
                         class="btn btn-primary"
                     >
@@ -157,7 +157,7 @@
 
                         <div class="col-12 col-md-auto mt-2 mt-md-0">
 
-                            <a
+                            
                                 href="{{ route('lecturas.index') }}"
                                 class="btn btn-outline-secondary"
                             >
@@ -374,7 +374,7 @@
 
                                     @if ($servicio)
 
-                                        <span class="badge badge-info">
+                                        <span class="badge text-bg-info">
                                             {{ $servicio->nombre }}
                                         </span>
 
@@ -453,13 +453,13 @@
 
                                     @if ($tarifa && $exceso > 0)
 
-                                        <span class="badge badge-danger">
+                                        <span class="badge text-bg-danger">
                                             {{ $formatearM3($exceso) }} m³
                                         </span>
 
                                     @elseif ($tarifa)
 
-                                        <span class="badge badge-success">
+                                        <span class="badge text-bg-success">
                                             Sin exceso
                                         </span>
 
@@ -572,14 +572,14 @@
 
                                         @if ($recibo->estado === 'PAGADO')
 
-                                            <span class="badge badge-success">
+                                            <span class="badge text-bg-success">
                                                 PAGADO
                                             </span>
 
 
                                         @elseif ($recibo->estado === 'ANULADO')
 
-                                            <span class="badge badge-secondary">
+                                            <span class="badge text-bg-secondary">
                                                 ANULADO
                                             </span>
 
@@ -589,21 +589,21 @@
                                             && $recibo->estaAtrasado()
                                         )
 
-                                            <span class="badge badge-danger">
+                                            <span class="badge text-bg-danger">
                                                 CON MORA
                                             </span>
 
 
                                         @elseif ($recibo->estado === 'PENDIENTE')
 
-                                            <span class="badge badge-warning">
+                                            <span class="badge text-bg-warning">
                                                 PENDIENTE
                                             </span>
 
 
                                         @else
 
-                                            <span class="badge badge-secondary">
+                                            <span class="badge text-bg-secondary">
                                                 {{ $recibo->estado }}
                                             </span>
 
@@ -611,7 +611,7 @@
 
                                     @else
 
-                                        <span class="badge badge-secondary">
+                                        <span class="badge text-bg-secondary">
                                             Sin recibo
                                         </span>
 
@@ -646,7 +646,7 @@
 
                                     @if ($recibo)
 
-                                        <a
+                                        
                                             href="{{ route(
                                                 'recibos.imprimir',
                                                 $recibo

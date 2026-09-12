@@ -93,7 +93,7 @@
                 </div>
 
                 <div class="mt-2 mt-md-0">
-                    <span class="badge badge-warning p-2">
+                    <span class="badge text-bg-warning p-2">
                         {{ $recibos->total() }} pendiente(s)
                     </span>
                 </div>
@@ -153,7 +153,7 @@
                                    d-flex align-items-end mt-2 mt-lg-0"
                         >
 
-                            <a
+                            
                                 href="{{ route('pagos.index') }}"
                                 class="btn btn-outline-secondary"
                             >
@@ -283,7 +283,7 @@
 
                                     @if ($servicio)
 
-                                        <span class="badge badge-info">
+                                        <span class="badge text-bg-info">
                                             {{ $servicio->nombre }}
                                         </span>
 
@@ -336,13 +336,13 @@
 
                                     @if ($estaAtrasado)
 
-                                        <span class="badge badge-danger">
+                                        <span class="badge text-bg-danger">
                                             {{ $diasAtraso }} día(s)
                                         </span>
 
                                     @else
 
-                                        <span class="badge badge-success">
+                                        <span class="badge text-bg-success">
                                             Al día
                                         </span>
 
@@ -394,7 +394,7 @@
                                                flex-wrap gap-2 justify-content-center"
                                     >
 
-                                        <a
+                                        
                                             href="{{ route(
                                                 'recibos.imprimir',
                                                 $recibo
@@ -409,7 +409,7 @@
                                         </a>
 
 
-                                        <a
+                                        
                                             href="{{ route(
                                                 'pagos.create',
                                                 $recibo
