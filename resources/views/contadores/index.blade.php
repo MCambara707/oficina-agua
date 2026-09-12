@@ -46,7 +46,7 @@
                             <th>Sector</th>
                             <th>Fotografía</th>
                             <th>Estado</th>
-                            <th style="width: 160px;">Acciones</th>
+                            <th style="width: 190px;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -96,7 +96,7 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <div class="d-flex flex-wrap gap-2">
+                                    <div class="d-flex flex-nowrap gap-2">
                                         <a href="{{ route('contadores.edit', $contador) }}"
                                            class="btn btn-sm btn-warning">Editar</a>
 
