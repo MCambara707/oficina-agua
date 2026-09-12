@@ -36,7 +36,7 @@
 
                 @if (session('recibo_generado_id'))
                     <div class="mt-2 mt-md-0 me-md-4">
-                        
+                        <a
                             href="{{ route(
                                 'recibos.imprimir',
                                 session('recibo_generado_id')
@@ -97,15 +97,13 @@
                 </div>
 
                 <div class="mt-2 mt-md-0">
-
-                    
+                    <a
                         href="{{ route('lecturas.create') }}"
                         class="btn btn-primary"
                     >
                         <i class="fas fa-plus me-1"></i>
                         Registrar lectura
                     </a>
-
                 </div>
 
             </div>
@@ -156,14 +154,12 @@
                     @if (!empty($busqueda))
 
                         <div class="col-12 col-md-auto mt-2 mt-md-0">
-
-                            
+                            <a
                                 href="{{ route('lecturas.index') }}"
                                 class="btn btn-outline-secondary"
                             >
                                 Limpiar búsqueda
                             </a>
-
                         </div>
 
                     @endif
@@ -646,7 +642,7 @@
 
                                     @if ($recibo)
 
-                                        
+                                        <a
                                             href="{{ route(
                                                 'recibos.imprimir',
                                                 $recibo
