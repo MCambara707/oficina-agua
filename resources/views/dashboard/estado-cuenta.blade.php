@@ -192,7 +192,7 @@
 
                     <div class="mt-1">
 
-                        <a
+                        
                             href="{{ route('dashboard.estado-cuenta') }}"
                             class="btn btn-outline-secondary btn-sm"
                         >
@@ -557,7 +557,7 @@
                                                 @if ($contador->activo)
 
                                                     <span
-                                                        class="badge badge-success ms-1"
+                                                        class="badge text-bg-success ms-1"
                                                     >
                                                         Activo
                                                     </span>
@@ -565,7 +565,7 @@
                                                 @else
 
                                                     <span
-                                                        class="badge badge-secondary ms-1"
+                                                        class="badge text-bg-secondary ms-1"
                                                     >
                                                         Inactivo
                                                     </span>
@@ -597,7 +597,7 @@
                                         @foreach ($servicios as $servicio)
 
                                             <span
-                                                class="badge badge-info
+                                                class="badge text-bg-info
                                                        d-inline-block mb-1"
                                             >
                                                 {{ $servicio }}
@@ -626,7 +626,7 @@
                                         === 'al-dia'
                                     )
 
-                                        <span class="badge badge-success">
+                                        <span class="badge text-bg-success">
 
                                             <i
                                                 class="fas fa-check-circle me-1"
@@ -642,7 +642,7 @@
                                         === 'pendiente'
                                     )
 
-                                        <span class="badge badge-warning">
+                                        <span class="badge text-bg-warning">
 
                                             <i
                                                 class="fas fa-clock me-1"
@@ -655,7 +655,7 @@
 
                                     @else
 
-                                        <span class="badge badge-danger">
+                                        <span class="badge text-bg-danger">
 
                                             <i
                                                 class="fas fa-exclamation-triangle me-1"
@@ -751,7 +751,7 @@
                                             > 0
                                         )
 
-                                            <a
+                                            
                                                 href="{{ route(
                                                     'pagos.index',
                                                     [
@@ -774,7 +774,7 @@
 
                                         @if ($ultimoRecibo)
 
-                                            <a
+                                            
                                                 href="{{ route(
                                                     'recibos.imprimir',
                                                     $ultimoRecibo

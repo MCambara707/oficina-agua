@@ -79,7 +79,7 @@
                                 <td>{{ $contador->numero_registro }}</td>
                                 <td>{{ $recibo->lectura->periodo->format('m/Y') }}</td>
                                 <td>{{ $recibo->fecha_emision->format('d/m/Y') }}</td>
-                                <td><span class="badge badge-{{ $color }}">{{ $recibo->estado }}</span></td>
+                                <td><span class="badge text-bg-{{ $color }}">{{ $recibo->estado }}</span></td>
                                 <td>Q{{ number_format((float) $recibo->monto, 2) }}</td>
                                 <td>Q{{ number_format($recibo->montoMora(), 2) }}</td>
                                 <td>Q{{ number_format($pendiente ? $recibo->montoConMora() : 0, 2) }}</td>
