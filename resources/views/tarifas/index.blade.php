@@ -23,37 +23,39 @@
     <div class="card">
         <div class="card-body">
 
-            <form
-                method="GET"
-                action="{{ route('tarifas.index') }}"
-                class="mb-3"
-            >
-                <div
-                    class="d-flex flex-column flex-sm-row gap-2 col-12 col-lg-7"
+            <!-- Contenedor flex para alinear buscador y botón a la par -->
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-3 gap-2">
+                <form
+                    method="GET"
+                    action="{{ route('tarifas.index') }}"
+                    class="m-0 col-12 col-md-7 col-lg-6"
                 >
-                    <input
-                        type="text"
-                        name="q"
-                        class="form-control"
-                        placeholder="Buscar por nombre"
-                        value="{{ $busqueda }}"
-                    >
+                    <div class="d-flex flex-column flex-sm-row gap-2">
+                        <input
+                            type="text"
+                            name="q"
+                            class="form-control"
+                            placeholder="Buscar por nombre"
+                            value="{{ $busqueda }}"
+                        >
 
-                    <button
-                        class="btn btn-secondary"
-                        type="submit"
-                    >
-                        Buscar
-                    </button>
-                </div>
-            </form>
+                        <button
+                            class="btn btn-secondary"
+                            type="submit"
+                        >
+                            Buscar
+                        </button>
+                    </div>
+                </form>
 
-            <a
-                href="{{ route('tarifas.create') }}"
-                class="btn btn-primary mb-3"
-            >
-                + Nueva Tarifa
-            </a>
+                <!-- Etiqueta <a> reparada y colocada a la par del buscador -->
+                <a
+                    href="{{ route('tarifas.create') }}"
+                    class="btn btn-primary text-nowrap"
+                >
+                    + Nueva Tarifa
+                </a>
+            </div>
 
             <div class="table-responsive">
 
@@ -70,7 +72,7 @@
                             <th>Vigente desde</th>
                             <th>Vigente hasta</th>
                             <th>Estado</th>
-                            <th>Acciones</th>
+                            <th style="width: 190px;">Acciones</th>
                         </tr>
                     </thead>
 
@@ -171,7 +173,7 @@
                                 </td>
 
                                 <td>
-                                    <div class="d-flex flex-wrap gap-2">
+                                    <div class="d-flex flex-nowrap gap-2">
                                         <a
                                             href="{{ route('tarifas.edit', $tarifa) }}"
                                             class="btn btn-sm btn-warning"
