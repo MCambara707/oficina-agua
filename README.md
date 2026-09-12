@@ -1,6 +1,6 @@
 <img width="1933" height="506" alt="image" src="https://github.com/user-attachments/assets/c68dc798-1b88-48f5-8d61-bdc5c8d1541c" />
 
-# Prototipo de Sistema de gestión de agua potable.
+# Prototipo Sistema de gestión de agua potable.
 
 Universidad Mariano Gálvez de Guatemala, 2026.
 
@@ -12,7 +12,7 @@ Universidad Mariano Gálvez de Guatemala, 2026.
 | Pablo Mauricio López Carrillo | 0905-23-14811 | plopezc16@miumg.edu.gt |
 | Gustavo Adolfo Godoy Barrera | 0905-19-9068 | ggodoyb1@miumg.edu.gt |
 | Nayeli Melissa Urrutia Orellana | 0905-23-5575 | Nurrutiao@miumg.edu.gt |
-| Manuel Alexander Monzón Palma | 0905-23-4539 | _(completar)_ |
+| Manuel Alexander Monzón Palma | 0905-23-4539 |  |
 
 ## Enlaces
 
