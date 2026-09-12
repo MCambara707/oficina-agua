@@ -192,8 +192,8 @@ return [
         false,
 
     /*
-     * El sidebar ahora es claro, por eso usamos
-     * scrollbar oscuro para mantener contraste.
+     * El sidebar utiliza fondo claro.
+     * El scrollbar oscuro mantiene un contraste adecuado.
      */
     'sidebar_scrollbar_theme' =>
         'os-theme-dark',
@@ -210,7 +210,7 @@ return [
 
     /*
      * AQ-43:
-     * El menú lateral ahora utiliza fondo claro #F4F8FB.
+     * El menú lateral utiliza la identidad visual AquaTech.
      */
     'sidebar_theme' =>
         'light',
@@ -253,7 +253,7 @@ return [
         '',
 
     /*
-     * Clase propia utilizada para aplicar la paleta AquaTech.
+     * Clase personalizada del sidebar AquaTech.
      */
     'classes_sidebar' =>
         'aquatech-sidebar shadow-sm',
@@ -284,15 +284,36 @@ return [
     |--------------------------------------------------------------------------
     | Menu
     |--------------------------------------------------------------------------
+    |
+    | El menú se organiza según el flujo natural del sistema:
+    |
+    | 1. Gestión:
+    |    creación y administración de registros base.
+    |
+    | 2. Operación:
+    |    lectura, consulta y seguimiento de cuentas.
+    |
+    | 3. Cobros:
+    |    registro de pagos.
+    |
     */
 
     'menu' => [
 
         /*
         |--------------------------------------------------------------------------
-        | OPERACIÓN PRINCIPAL
+        | GESTIÓN
         |--------------------------------------------------------------------------
         */
+
+        [
+            'header' =>
+                'GESTIÓN',
+
+            'can' =>
+                'ver-modulos-administrativos',
+        ],
+
 
         [
             'text' =>
@@ -312,85 +333,6 @@ return [
                 'ver-modulos-administrativos',
         ],
 
-
-        [
-            'text' =>
-                'Estado de cuenta',
-
-            'route' =>
-                'dashboard.estado-cuenta',
-
-            'icon' =>
-                'bi bi-clipboard-data',
-
-            'active' => [
-                'dashboard/estado-cuenta*',
-            ],
-
-            'can' =>
-                'ver-modulos-administrativos',
-        ],
-
-
-        [
-            'text' =>
-                'Lecturas',
-
-            'route' =>
-                'lecturas.index',
-
-            'icon' =>
-                'bi bi-water',
-
-            'active' => [
-                'lecturas*',
-            ],
-        ],
-
-
-        [
-            'text' =>
-                'Pagos',
-
-            'route' =>
-                'pagos.index',
-
-            'icon' =>
-                'bi bi-credit-card',
-
-            'active' => [
-                'pagos*',
-            ],
-
-            'can' =>
-                'ver-modulos-administrativos',
-        ],
-
-
-        [
-            'text' =>
-                'Historial de recibos',
-
-            'route' =>
-                'recibos.index',
-
-            'icon' =>
-                'bi bi-receipt',
-
-            'active' => [
-                'recibos*',
-            ],
-
-            'can' =>
-                'ver-modulos-administrativos',
-        ],
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | MANTENIMIENTOS
-        |--------------------------------------------------------------------------
-        */
 
         [
             'text' =>
@@ -468,12 +410,6 @@ return [
         ],
 
 
-        /*
-        |--------------------------------------------------------------------------
-        | ADMINISTRACIÓN
-        |--------------------------------------------------------------------------
-        */
-
         [
             'text' =>
                 'Usuarios',
@@ -490,6 +426,106 @@ return [
 
             'can' =>
                 'administrar-usuarios',
+        ],
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | OPERACIÓN
+        |--------------------------------------------------------------------------
+        */
+
+        [
+            'header' =>
+                'OPERACIÓN',
+        ],
+
+
+        [
+            'text' =>
+                'Lecturas',
+
+            'route' =>
+                'lecturas.index',
+
+            'icon' =>
+                'bi bi-water',
+
+            'active' => [
+                'lecturas*',
+            ],
+        ],
+
+
+        [
+            'text' =>
+                'Estado de cuenta',
+
+            'route' =>
+                'dashboard.estado-cuenta',
+
+            'icon' =>
+                'bi bi-clipboard-data',
+
+            'active' => [
+                'dashboard/estado-cuenta*',
+            ],
+
+            'can' =>
+                'ver-modulos-administrativos',
+        ],
+
+
+        [
+            'text' =>
+                'Historial de recibos',
+
+            'route' =>
+                'recibos.index',
+
+            'icon' =>
+                'bi bi-receipt',
+
+            'active' => [
+                'recibos*',
+            ],
+
+            'can' =>
+                'ver-modulos-administrativos',
+        ],
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | COBROS
+        |--------------------------------------------------------------------------
+        */
+
+        [
+            'header' =>
+                'COBROS',
+
+            'can' =>
+                'ver-modulos-administrativos',
+        ],
+
+
+        [
+            'text' =>
+                'Pagos',
+
+            'route' =>
+                'pagos.index',
+
+            'icon' =>
+                'bi bi-credit-card',
+
+            'active' => [
+                'pagos*',
+            ],
+
+            'can' =>
+                'ver-modulos-administrativos',
         ],
     ],
 

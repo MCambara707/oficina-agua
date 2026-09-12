@@ -26,6 +26,9 @@
 
     --aquatech-hover-bg: #E8F2F8;
     --aquatech-active-bg: #DDEEFF;
+
+    --aquatech-section-text: #8296A8;
+    --aquatech-section-line: #D7E2EA;
 }
 
 
@@ -109,11 +112,14 @@
 
 .app-header .user-menu > .nav-link > span {
     max-width: 12rem;
+
     overflow: hidden;
+
     text-overflow: ellipsis;
 }
 
 @media (max-width: 1199.98px) {
+
     .app-header .user-menu > .nav-link > span {
         display: none !important;
     }
@@ -126,7 +132,9 @@
 
 .app-sidebar.aquatech-sidebar {
     background: var(--aquatech-sidebar-bg) !important;
+
     color: var(--aquatech-primary);
+
     border-right: 1px solid var(--aquatech-sidebar-border);
 }
 
@@ -171,6 +179,10 @@
     text-decoration: none;
 }
 
+
+/*
+ * Logo horizontal visible con el sidebar expandido.
+ */
 .aquatech-sidebar-logo-full {
     display: block;
 
@@ -186,6 +198,10 @@
     flex: 0 1 auto;
 }
 
+
+/*
+ * Icono AquaTech visible con el sidebar colapsado.
+ */
 .aquatech-sidebar-logo-icon {
     display: none;
 
@@ -208,7 +224,54 @@
 }
 
 .aquatech-sidebar .sidebar-menu {
-    padding: .75rem .5rem 1rem;
+    padding: .65rem .5rem 1rem;
+}
+
+
+/* ==========================================================================
+   ENCABEZADOS DEL MENÚ
+   GESTIÓN / OPERACIÓN / COBROS
+   ========================================================================== */
+
+.aquatech-sidebar .sidebar-menu .nav-header {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    min-height: 1.9rem;
+
+    margin: .7rem .4rem .3rem;
+    padding: .35rem .45rem;
+
+    overflow: hidden;
+
+    color: var(--aquatech-section-text) !important;
+
+    background: transparent !important;
+
+    font-size: .69rem;
+    font-weight: 700;
+    line-height: 1.2;
+
+    letter-spacing: .085em;
+
+    text-transform: uppercase;
+
+    white-space: nowrap;
+
+    transition:
+        margin .15s ease-in-out,
+        padding .15s ease-in-out,
+        color .15s ease-in-out;
+}
+
+
+/*
+ * El primer encabezado no necesita demasiado espacio superior.
+ */
+.aquatech-sidebar .sidebar-menu .nav-header:first-child {
+    margin-top: .2rem;
 }
 
 
@@ -241,21 +304,24 @@
 
 .aquatech-sidebar .sidebar-menu .nav-link p {
     margin: 0;
+
     color: inherit;
 }
 
 .aquatech-sidebar .sidebar-menu .nav-link .nav-icon {
     color: var(--aquatech-icon) !important;
+
     transition: color .15s ease-in-out;
 }
 
 
 /* ==========================================================================
-   HOVER
+   HOVER DEL MENÚ
    ========================================================================== */
 
 .aquatech-sidebar .sidebar-menu .nav-link:hover {
     color: var(--aquatech-primary) !important;
+
     background: var(--aquatech-hover-bg) !important;
 }
 
@@ -265,7 +331,7 @@
 
 
 /* ==========================================================================
-   OPCIÓN ACTIVA
+   OPCIÓN ACTIVA DEL MENÚ
    ========================================================================== */
 
 .aquatech-sidebar .sidebar-menu .nav-link.active {
@@ -283,6 +349,10 @@
     color: var(--aquatech-accent) !important;
 }
 
+
+/*
+ * Evita fondos heredados de AdminLTE.
+ */
 .aquatech-sidebar .nav-item,
 .aquatech-sidebar .nav-treeview {
     background: transparent !important;
@@ -305,6 +375,10 @@ body.sidebar-collapse
     padding-right: .3rem;
 }
 
+
+/*
+ * Oculta logo horizontal.
+ */
 body.sidebar-collapse
 .aquatech-sidebar-logo-full,
 .sidebar-collapse
@@ -312,6 +386,10 @@ body.sidebar-collapse
     display: none;
 }
 
+
+/*
+ * Muestra únicamente el icono AquaTech.
+ */
 body.sidebar-collapse
 .aquatech-sidebar-logo-icon,
 .sidebar-collapse
@@ -319,7 +397,15 @@ body.sidebar-collapse
     display: block;
 }
 
+
+/*
+ * Centra iconos de las opciones.
+ */
 body.sidebar-collapse
+.aquatech-sidebar
+.sidebar-menu
+.nav-link,
+.sidebar-collapse
 .aquatech-sidebar
 .sidebar-menu
 .nav-link {
@@ -333,8 +419,105 @@ body.sidebar-collapse
 .aquatech-sidebar
 .sidebar-menu
 .nav-link
+.nav-icon,
+.sidebar-collapse
+.aquatech-sidebar
+.sidebar-menu
+.nav-link
 .nav-icon {
     margin: 0 !important;
+}
+
+
+/*
+ * Al colapsar el sidebar:
+ * - desaparece el texto GESTIÓN / OPERACIÓN / COBROS;
+ * - queda una línea discreta para conservar la separación visual.
+ */
+body.sidebar-collapse
+.aquatech-sidebar
+.sidebar-menu
+.nav-header,
+.sidebar-collapse
+.aquatech-sidebar
+.sidebar-menu
+.nav-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    min-height: 1rem;
+    height: 1rem;
+
+    margin: .45rem 0;
+    padding: 0;
+
+    overflow: hidden;
+
+    color: transparent !important;
+
+    font-size: 0;
+    line-height: 0;
+
+    letter-spacing: 0;
+
+    user-select: none;
+}
+
+
+/*
+ * Separador visual entre grupos cuando el menú está cerrado.
+ */
+body.sidebar-collapse
+.aquatech-sidebar
+.sidebar-menu
+.nav-header::after,
+.sidebar-collapse
+.aquatech-sidebar
+.sidebar-menu
+.nav-header::after {
+    content: '';
+
+    display: block;
+
+    width: 1.65rem;
+    height: 1px;
+
+    margin: 0 auto;
+
+    background: var(--aquatech-section-line);
+
+    border-radius: 999px;
+}
+
+
+/*
+ * No mostramos separador antes del primer grupo.
+ */
+body.sidebar-collapse
+.aquatech-sidebar
+.sidebar-menu
+.nav-header:first-child,
+.sidebar-collapse
+.aquatech-sidebar
+.sidebar-menu
+.nav-header:first-child {
+    min-height: .35rem;
+    height: .35rem;
+
+    margin: 0;
+}
+
+body.sidebar-collapse
+.aquatech-sidebar
+.sidebar-menu
+.nav-header:first-child::after,
+.sidebar-collapse
+.aquatech-sidebar
+.sidebar-menu
+.nav-header:first-child::after {
+    display: none;
 }
 
 
@@ -354,6 +537,26 @@ body:not(.sidebar-collapse)
 body.sidebar-open
 .aquatech-sidebar-logo-icon {
     display: none;
+}
+
+
+/*
+ * Garantiza que los encabezados se vean cuando el sidebar esté abierto.
+ */
+body:not(.sidebar-collapse)
+.aquatech-sidebar
+.sidebar-menu
+.nav-header,
+body.sidebar-open
+.aquatech-sidebar
+.sidebar-menu
+.nav-header {
+    color: var(--aquatech-section-text) !important;
+
+    font-size: .69rem;
+    line-height: 1.2;
+
+    letter-spacing: .085em;
 }
 
 
@@ -379,6 +582,33 @@ body.sidebar-open
 
     body.sidebar-open
     .aquatech-sidebar-logo-icon {
+        display: none;
+    }
+
+    body.sidebar-open
+    .aquatech-sidebar
+    .sidebar-menu
+    .nav-header {
+        display: flex;
+
+        min-height: 1.9rem;
+        height: auto;
+
+        margin: .7rem .4rem .3rem;
+        padding: .35rem .45rem;
+
+        color: var(--aquatech-section-text) !important;
+
+        font-size: .69rem;
+        line-height: 1.2;
+
+        letter-spacing: .085em;
+    }
+
+    body.sidebar-open
+    .aquatech-sidebar
+    .sidebar-menu
+    .nav-header::after {
         display: none;
     }
 }
@@ -435,6 +665,7 @@ body.sidebar-open
 
 .aquatech-login-box {
     width: min(100%, 29rem);
+
     margin: 0;
 }
 
@@ -513,7 +744,7 @@ body.sidebar-open
 .aquatech-login-subtitle {
     margin: 0;
 
-    color: #20384f;
+    color: #20384F;
 
     font-size: .98rem;
     font-weight: 400;
@@ -570,7 +801,7 @@ body.sidebar-open
 }
 
 .aquatech-login-field .form-control {
-    color: #172b3d;
+    color: #172B3D;
 
     font-size: 1rem;
 
@@ -594,21 +825,25 @@ body.sidebar-open
 
 .aquatech-login-field .form-control:focus::placeholder {
     color: transparent;
+
     opacity: 0;
 }
 
 .aquatech-login-field .form-control:focus::-moz-placeholder {
     color: transparent;
+
     opacity: 0;
 }
 
 .aquatech-login-field .form-control:focus::-webkit-input-placeholder {
     color: transparent;
+
     opacity: 0;
 }
 
 .aquatech-login-field .form-control:focus {
     background: transparent !important;
+
     box-shadow: none !important;
 }
 
@@ -621,7 +856,7 @@ body.sidebar-open
 .aquatech-login-field .form-control:-webkit-autofill:hover,
 .aquatech-login-field .form-control:-webkit-autofill:focus,
 .aquatech-login-field .form-control:-webkit-autofill:active {
-    -webkit-text-fill-color: #172b3d;
+    -webkit-text-fill-color: #172B3D;
 
     -webkit-box-shadow:
         0 0 0 1000px rgba(255, 255, 255, .20) inset !important;
@@ -645,7 +880,7 @@ body.sidebar-open
 
     min-width: 3.2rem;
 
-    color: #1f4568;
+    color: #1F4568;
 }
 
 
@@ -658,7 +893,7 @@ body.sidebar-open
 
     border: 0 !important;
 
-    color: #1f4568;
+    color: #1F4568;
 
     background: transparent !important;
 
@@ -668,7 +903,7 @@ body.sidebar-open
 }
 
 .password-toggle:hover {
-    color: #0d6efd;
+    color: #0D6EFD;
 
     background:
         rgba(13, 110, 253, .08) !important;
@@ -676,7 +911,7 @@ body.sidebar-open
 
 .password-toggle:focus-visible {
     outline:
-        2px solid #0d6efd;
+        2px solid #0D6EFD;
 
     outline-offset: -3px;
 }
@@ -692,7 +927,7 @@ body.sidebar-open
     border: 0 !important;
     border-radius: .7rem;
 
-    color: #fff !important;
+    color: #FFFFFF !important;
 
     font-size: 1rem;
     font-weight: 600;
@@ -700,8 +935,8 @@ body.sidebar-open
     background:
         linear-gradient(
             135deg,
-            #2475dc,
-            #1252ad
+            #2475DC,
+            #1252AD
         ) !important;
 
     box-shadow:
@@ -716,7 +951,7 @@ body.sidebar-open
 .aquatech-login-submit:hover {
     transform: translateY(-1px);
 
-    color: #fff !important;
+    color: #FFFFFF !important;
 
     filter: brightness(1.06);
 
@@ -735,24 +970,19 @@ body.sidebar-open
 
 .aquatech-whatsapp-btn,
 a.aquatech-whatsapp-btn {
-    min-height: 3.1rem;
-
     display: inline-flex;
     align-items: center;
     justify-content: center;
 
-    border:
-        1px solid #25d366 !important;
+    min-height: 3.1rem;
 
+    border: 1px solid #25D366 !important;
     border-radius: .7rem;
 
-    background-color:
-        #25d366 !important;
+    background-color: #25D366 !important;
+    background-image: none !important;
 
-    background-image:
-        none !important;
-
-    color: #fff !important;
+    color: #FFFFFF !important;
 
     font-size: 1rem;
     font-weight: 600;
@@ -770,7 +1000,8 @@ a.aquatech-whatsapp-btn {
 }
 
 .aquatech-whatsapp-btn i {
-    color: #fff !important;
+    color: #FFFFFF !important;
+
     font-size: 1.1rem;
 }
 
@@ -778,13 +1009,11 @@ a.aquatech-whatsapp-btn {
 a.aquatech-whatsapp-btn:hover {
     transform: translateY(-1px);
 
-    background-color:
-        #1fbd5a !important;
+    background-color: #1FBD5A !important;
 
-    border-color:
-        #1fbd5a !important;
+    border-color: #1FBD5A !important;
 
-    color: #fff !important;
+    color: #FFFFFF !important;
 
     box-shadow:
         0 .65rem 1.25rem rgba(37, 211, 102, .32);
@@ -792,7 +1021,7 @@ a.aquatech-whatsapp-btn:hover {
 
 .aquatech-whatsapp-btn:focus-visible {
     outline:
-        2px solid #128c4a;
+        2px solid #128C4A;
 
     outline-offset: 2px;
 }
@@ -800,8 +1029,7 @@ a.aquatech-whatsapp-btn:hover {
 .aquatech-whatsapp-btn:active {
     transform: translateY(0);
 
-    background-color:
-        #1aaa53 !important;
+    background-color: #1AAA53 !important;
 }
 
 
@@ -840,6 +1068,7 @@ a.aquatech-whatsapp-btn:hover {
             url('/img/login/FondoLoginVertical.png');
 
         background-position: center;
+
         background-attachment: scroll;
     }
 
@@ -871,20 +1100,17 @@ a.aquatech-whatsapp-btn:hover {
     }
 
     .aquatech-login-card .card-body {
-        padding:
-            1.5rem !important;
+        padding: 1.5rem !important;
     }
 
     .aquatech-login-logo {
-        width:
-            min(100%, 15rem);
+        width: min(100%, 15rem);
     }
 
     .aquatech-login-divider {
         width: 90%;
 
-        margin:
-            .85rem auto;
+        margin: .85rem auto;
     }
 
     .aquatech-login-subtitle {
@@ -909,8 +1135,7 @@ a.aquatech-whatsapp-btn:hover {
 @media (min-width: 576px) and (max-width: 1024px) {
 
     .aquatech-login-box {
-        width:
-            min(100%, 27rem);
+        width: min(100%, 27rem);
     }
 
     .aquatech-login-shell {
@@ -925,6 +1150,7 @@ a.aquatech-whatsapp-btn:hover {
 
 .estado-cuenta-card {
     background: var(--bs-body-bg);
+
     border-color: var(--bs-border-color);
 }
 
@@ -1163,7 +1389,7 @@ a.aquatech-whatsapp-btn:hover {
 
 
 /* ==========================================================================
-   ENCABEZADO
+   ENCABEZADO DE EQUIPO
    ========================================================================== */
 
 .aquatech-equipo-header {
@@ -1198,16 +1424,6 @@ a.aquatech-whatsapp-btn:hover {
             rgba(22, 135, 201, .55),
             transparent
         );
-}
-
-.aquatech-equipo-title {
-    margin: 0 0 .75rem;
-
-    color: #173A5E;
-
-    font-size: clamp(2rem, 5vw, 2.75rem);
-    font-weight: 700;
-    line-height: 1.1;
 }
 
 .aquatech-equipo-description {
@@ -1384,10 +1600,6 @@ a.aquatech-whatsapp-btn:hover {
     margin-top: 1.75rem;
 }
 
-
-/*
- * Azul oscuro permanente.
- */
 .aquatech-equipo-back {
     display: inline-flex;
     align-items: center;
@@ -1435,6 +1647,7 @@ a.aquatech-whatsapp-btn:hover {
 
 .aquatech-equipo-back:focus-visible {
     outline: 2px solid #1687C9;
+
     outline-offset: 3px;
 }
 
@@ -1532,8 +1745,7 @@ a.aquatech-whatsapp-btn:hover {
 .aquatech-user-menu {
     width: 17rem;
 
-    max-width:
-        calc(100vw - 2rem);
+    max-width: calc(100vw - 2rem);
 }
 
 .app-header .nav-link,
