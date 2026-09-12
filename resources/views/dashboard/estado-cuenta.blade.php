@@ -192,7 +192,7 @@
 
                     <div class="mt-1">
 
-                        
+                        <a
                             href="{{ route('dashboard.estado-cuenta') }}"
                             class="btn btn-outline-secondary btn-sm"
                         >
@@ -688,7 +688,7 @@
                                 </td>
 
 
-                                {{-- MONTO PENDIENTE --}}
+                                {{-- MONTO PENDIENTES --}}
                                 <td class="text-end">
 
                                     Q{{ number_format(
@@ -751,7 +751,7 @@
                                             > 0
                                         )
 
-                                            
+                                            <a
                                                 href="{{ route(
                                                     'pagos.index',
                                                     [
@@ -774,7 +774,7 @@
 
                                         @if ($ultimoRecibo)
 
-                                            
+                                            <a
                                                 href="{{ route(
                                                     'recibos.imprimir',
                                                     $ultimoRecibo
