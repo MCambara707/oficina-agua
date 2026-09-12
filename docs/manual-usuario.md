@@ -1,4 +1,4 @@
-# Manual de usuario  Oficina del Agua
+# Manual de Usuario
 
 Esta guía explica, en lenguaje sencillo, cómo usar el sistema según tu rol. No necesitas conocimientos técnicos para seguirla.
 
@@ -19,7 +19,7 @@ Si intentas entrar a una sección que no te corresponde, el sistema te va a most
 2. Escribe tu correo y tu contraseña.
 3. Presiona **Iniciar sesión**.
 
-![alt text](image.png)
+![alt text](image-11.png)
 
 **Si te sale "Las credenciales ingresadas son incorrectas o el usuario está inactivo":** revisa que estés escribiendo bien tu correo y contraseña. Si estás seguro de que están bien, avisa al Administrador — puede que tu usuario esté desactivado.
 
@@ -43,11 +43,11 @@ Si intentas entrar a una sección que no te corresponde, el sistema te va a most
    - **Teléfono** (opcional).
    - **Dirección principal** (opcional).
 
-  ![alt text](image-3.png)
+![alt text](image-4.png)
 
 4. Presiona **Guardar**. Si todo está correcto, vuelves al listado y el cliente nuevo aparece ahí.
 
-![alt text](image-4.png)
+![alt text](image-5.png)
 
 **Si el sistema no te deja guardar:** casi siempre es porque el DPI que escribiste ya pertenece a otro cliente registrado. Verifica el número.
 
@@ -60,7 +60,7 @@ Si intentas entrar a una sección que no te corresponde, el sistema te va a most
 1. En el menú lateral, entra a **Lecturas**.
 2. Presiona **+ Registrar Lectura**.
 
-   ![alt text](image-5.png)
+![alt text](image-6.png)
 
 3. En el primer paso, elige el **contador** de la lista desplegable. En cuanto lo eliges, la pantalla se actualiza sola y te muestra:
    - El cliente al que pertenece.
@@ -74,7 +74,7 @@ Si intentas entrar a una sección que no te corresponde, el sistema te va a most
 
 5. Presiona **Guardar lectura**.
 
-![alt text](image-6.png)
+![alt text](image-7.png)
 
 **Si el sistema no te deja guardar:**
 - *"La lectura actual no puede ser menor a la lectura anterior"* — revisa el número que escribiste; un contador de agua nunca retrocede.
@@ -87,29 +87,20 @@ Si intentas entrar a una sección que no te corresponde, el sistema te va a most
 *(Lector: puede imprimir el recibo recién generado. Administrador y Secretaria: pueden consultar todo el historial.)*
  
 1. En el menú lateral, entra a **Recibos**.
-   `[CAPTURA: listado/historial de recibos]`
+   
+![alt text](image.png)
+
 2. *(Solo Administrador y Secretaria)* Puedes buscar por número de recibo, DPI, nombre del cliente o número de contador, y filtrar por período o por estado (**Pendiente**, **Pagado**, **Anulado**).
-   `[CAPTURA: filtros de búsqueda aplicados sobre el historial de recibos]`
+   
+![alt text](image-3.png)
+
 3. Selecciona un recibo para abrir la versión imprimible.
-   `[CAPTURA: recibo imprimible, con los datos del cliente, consumo y monto]`
-4. Si el recibo todavía está **pendiente** y ya se pasó la fecha de vencimiento, el recibo va a mostrar los días de atraso y el monto de mora ya sumado al total. Si el recibo ya está **pagado**, la misma pantalla funciona como comprobante de pago.
+   
+![alt text](image-12.png)
+
+Si el recibo todavía está **pendiente** y ya se pasó la fecha de vencimiento, el recibo va a mostrar los días de atraso y el monto de mora ya sumado al total. Si el recibo ya está **pagado**, la misma pantalla funciona como comprobante de pago.
 **Nota:** el Lector solo puede abrir el recibo puntual que se generó al guardar su lectura (por ejemplo, para imprimirlo en el momento en campo) — el historial completo de búsqueda es solo para Administrador y Secretaria.
 
----
- 
-## Cómo consultar e imprimir un recibo
- 
-*(Lector: puede imprimir el recibo recién generado. Administrador y Secretaria: pueden consultar todo el historial.)*
- 
-1. En el menú lateral, entra a **Recibos**.
-   `[CAPTURA: listado/historial de recibos]`
-2. *(Solo Administrador y Secretaria)* Puedes buscar por número de recibo, DPI, nombre del cliente o número de contador, y filtrar por período o por estado (**Pendiente**, **Pagado**, **Anulado**).
-   `[CAPTURA: filtros de búsqueda aplicados sobre el historial de recibos]`
-3. Selecciona un recibo para abrir la versión imprimible.
-   `[CAPTURA: recibo imprimible, con los datos del cliente, consumo y monto]`
-4. Si el recibo todavía está **pendiente** y ya se pasó la fecha de vencimiento, el recibo va a mostrar los días de atraso y el monto de mora ya sumado al total. Si el recibo ya está **pagado**, la misma pantalla funciona como comprobante de pago.
-**Nota:** el Lector solo puede abrir el recibo puntual que se generó al guardar su lectura (por ejemplo, para imprimirlo en el momento en campo) — el historial completo de búsqueda es solo para Administrador y Secretaria.
- 
 ---
 
 ## Cómo ver el estado de cuenta de un cliente
@@ -118,16 +109,16 @@ Si intentas entrar a una sección que no te corresponde, el sistema te va a most
 
 1. En el menú lateral, entra a **Dashboard** o **Estado de cuenta**.
 
-   ![alt text](image-7.png)
+![alt text](image-10.png)
 
 2. Puedes buscar un cliente específico escribiendo su nombre, o filtrar por estado:
    - **Al día** — no tiene ningún recibo pendiente de pago.
    - **Pendiente** — tiene recibos por pagar, pero ninguno está atrasado.
    - **Con mora** — tiene al menos un recibo pendiente que ya se pasó de la fecha de pago.
 
-   ![alt text](image-8.png)
+![alt text](image-9.png)
 
-3. Cada fila te muestra cuánto debe el cliente en total, incluyendo el recargo por mora si aplica.
+Cada fila te muestra cuánto debe el cliente en total, incluyendo el recargo por mora si aplica.
 
 ---
 
