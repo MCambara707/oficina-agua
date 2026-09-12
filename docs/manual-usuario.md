@@ -19,7 +19,8 @@ Si intentas entrar a una sección que no te corresponde, el sistema te va a most
 2. Escribe tu correo y tu contraseña.
 3. Presiona **Iniciar sesión**.
 
-![alt text](image-11.png)
+<img width="1364" height="628" alt="image-11" src="https://github.com/user-attachments/assets/eb353064-f60c-4a76-8f61-f15dae82694f" />
+
 
 **Si te sale "Las credenciales ingresadas son incorrectas o el usuario está inactivo":** revisa que estés escribiendo bien tu correo y contraseña. Si estás seguro de que están bien, avisa al Administrador — puede que tu usuario esté desactivado.
 
@@ -53,6 +54,28 @@ Si intentas entrar a una sección que no te corresponde, el sistema te va a most
 
 ---
 
+## Cómo registrar un contador
+ 
+*(Para Administrador y Secretaria — se necesita antes de poder tomar lecturas)*
+ 
+1. En el menú lateral, entra a **Contadores**.
+2. Presiona el botón **+ Nuevo Contador**.
+  <img width="1349" height="632" alt="image" src="https://github.com/user-attachments/assets/219d543f-e54c-4ce2-b25b-4780030a9f69" />
+
+3. Llena el formulario:
+   - **Cliente** — a quién pertenece este contador (solo aparecen clientes activos).
+   - **Tarifa** — obligatoria. Es el tipo de servicio contratado (1/2 paja, 1 paja, 2 pajas); de aquí sale el precio que se va a usar en cada recibo.
+   - **Servicio** (opcional) — una clasificación informativa, no afecta el cobro.
+   - **Número de registro** — el identificador físico del contador (ejemplo: `CONT-001`).
+   - **Dirección de servicio** y/o **Punto de referencia** — al menos uno de los dos es necesario para poder ubicar el contador (ejemplo de referencia: "Casa verde, frente a la iglesia").
+   - **Sector** (opcional).
+   - **Lectura inicial** (opcional) — si ya sabes cuánto marca el contador físicamente al momento de darlo de alta, anótalo aquí; si no, se puede dejar en blanco.
+   - **Foto** (opcional) — una imagen del contador o del lugar, para ubicarlo más fácil en el futuro.
+4. Presiona **Guardar**.
+**Si el sistema no te deja guardar:** revisa que el número de registro no esté repetido, y que hayas puesto al menos una dirección o un punto de referencia.
+ 
+---
+
 ## Cómo tomar una lectura
 
 *(Para Lector — Administrador y Secretaria también pueden consultarlas)*
@@ -75,6 +98,10 @@ Si intentas entrar a una sección que no te corresponde, el sistema te va a most
 5. Presiona **Guardar lectura**.
 
 ![alt text](image-7.png)
+
+Al guardar, el sistema **genera automáticamente el recibo** de ese período — no es un paso aparte. El mensaje de confirmación te va a mostrar el número de recibo generado (por ejemplo, `REC-2026-4821-000001`), listo para consultarse e imprimirse.
+
+![alt text](image-8.png)
 
 **Si el sistema no te deja guardar:**
 - *"La lectura actual no puede ser menor a la lectura anterior"* — revisa el número que escribiste; un contador de agua nunca retrocede.
@@ -103,6 +130,28 @@ Si el recibo todavía está **pendiente** y ya se pasó la fecha de vencimiento,
 
 ---
 
+## Cómo registrar un pago
+ 
+*(Para Administrador y Secretaria)*
+ 
+1. En el menú lateral, entra a **Pagos**. Aquí solo aparecen los recibos que todavía están **pendientes** — los ya pagados o anulados no salen en esta lista.
+
+<img width="1333" height="634" alt="image" src="https://github.com/user-attachments/assets/a7aa54d2-1fe2-48db-9d5b-597d542f21a1" />
+
+2. Busca el recibo (por número de recibo, cliente, DPI o número de contador) y presiona **Registrar pago** en la fila correspondiente.
+ 
+ <img width="1351" height="630" alt="image" src="https://github.com/user-attachments/assets/9d45200b-6845-4290-9d88-90183f059d07" />
+
+3. En la pantalla de cobro verás el detalle del recibo, incluyendo la mora si el pago ya está atrasado. Elige el **método de pago** y, si quieres, agrega una **referencia** (por ejemplo, número de boleta) y una **observación**.
+ 
+ <img width="1343" height="502" alt="image" src="https://github.com/user-attachments/assets/03486456-2970-4bc9-8d3c-e5049930cb31" />
+
+4. Presiona **Registrar pago**. El sistema calcula el monto final por su cuenta (no se puede editar a mano) y marca el recibo como **Pagado**. Te va a llevar directo al recibo, que ahora funciona como comprobante.
+**Si el sistema no te deja registrar el pago:**
+- *"Este recibo ya fue pagado"* — alguien más ya lo cobró; revisa el estado antes de intentar de nuevo.
+- *"El recibo está anulado"* — un recibo anulado no puede recibir pagos.
+---
+ 
 ## Cómo ver el estado de cuenta de un cliente
 
 *(Para Administrador y Secretaria)*
