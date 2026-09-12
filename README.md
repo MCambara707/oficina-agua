@@ -1,9 +1,8 @@
-# Oficina del Agua
+<img width="1933" height="506" alt="image" src="https://github.com/user-attachments/assets/c68dc798-1b88-48f5-8d61-bdc5c8d1541c" />
 
-Sistema administrativo para el control de clientes, contadores, lecturas, tarifas, recibos y pagos de un servicio municipal de agua. Universidad Mariano Gálvez.
-# Oficina del Agua
+# Prototipo de Sistema de gestión de agua potable.
 
-Sistema administrativo para el control de clientes, contadores, lecturas, tarifas, recibos y pagos de un servicio municipal de agua. Proyecto del curso Desarrollo Web — Universidad Mariano Gálvez.
+Universidad Mariano Gálvez de Guatemala, 2026.
 
 ## Equipo
 
