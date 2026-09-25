@@ -20,14 +20,20 @@ class TarifaController extends Controller
     private const TIPOS_BASE = ['1/2 paja', '1 paja', '2 pajas'];
 
     private const CAMPOS_HISTORICOS = [
-        'nombre', 'tipo', 'capacidad', 'precio_por_m3', 'precio_exceso_m3',
-        'mora_porcentaje', 'mora_monto_fijo', 'vigente_desde',
+        'nombre',
+        'tipo',
+        'capacidad',
+        'precio_por_m3',
+        'precio_exceso_m3',
+        'mora_porcentaje',
+        'mora_monto_fijo',
+        'vigente_desde',
     ];
 
     public function index(Request $request)
     {
         $busqueda = $request->input('q');
-        $tarifas = Tarifa::when($busqueda, fn ($query, $valor) => $query->where('nombre', 'like', "%{$valor}%"))
+        $tarifas = Tarifa::when($busqueda, fn($query, $valor) => $query->where('nombre', 'like', "%{$valor}%"))
             ->orderByDesc('vigente_desde')->paginate(10)->withQueryString();
 
         return view('tarifas.index', compact('tarifas', 'busqueda'));
@@ -71,7 +77,8 @@ class TarifaController extends Controller
 
                     if ($fin === null || $fin >= $datos['vigente_desde']) {
                         if (Recibo::where('tarifa_id', $anterior->id)
-                            ->whereDate('fecha_emision', '>', $fechaCierre)->exists()) {
+                            ->whereDate('fecha_emision', '>', $fechaCierre)->exists()
+                        ) {
                             throw ValidationException::withMessages([
                                 'vigente_desde' => 'Esta fecha dejaría fuera de vigencia recibos ya emitidos. Use una fecha posterior al último recibo de la tarifa anterior.',
                             ]);
@@ -124,9 +131,11 @@ class TarifaController extends Controller
                 ]);
             }
 
-            if ($tieneRecibos && !empty($datos['vigente_hasta']) &&
+            if (
+                $tieneRecibos && !empty($datos['vigente_hasta']) &&
                 Recibo::where('tarifa_id', $actual->id)
-                    ->whereDate('fecha_emision', '>', $datos['vigente_hasta'])->exists()) {
+                ->whereDate('fecha_emision', '>', $datos['vigente_hasta'])->exists()
+            ) {
                 throw ValidationException::withMessages([
                     'vigente_hasta' => 'La fecha final no puede dejar fuera de vigencia recibos ya emitidos con esta tarifa.',
                 ]);
@@ -138,7 +147,7 @@ class TarifaController extends Controller
                     ->where(function ($query) use ($datos) {
                         $query->whereNull('vigente_hasta')->orWhere('vigente_hasta', '>=', $datos['vigente_desde']);
                     })
-                    ->when(!empty($datos['vigente_hasta']), fn ($query) => $query->where('vigente_desde', '<=', $datos['vigente_hasta']))
+                    ->when(!empty($datos['vigente_hasta']), fn($query) => $query->where('vigente_desde', '<=', $datos['vigente_hasta']))
                     ->lockForUpdate()->first();
 
                 if ($superpuesta) {
@@ -160,8 +169,10 @@ class TarifaController extends Controller
             $eliminada = DB::transaction(function () use ($tarifa) {
                 Auditoria::establecerUsuario();
                 $actual = Tarifa::whereKey($tarifa->id)->lockForUpdate()->firstOrFail();
-                if (Contador::where('tarifa_id', $actual->id)->exists() ||
-                    Recibo::where('tarifa_id', $actual->id)->exists()) {
+                if (
+                    Contador::where('tarifa_id', $actual->id)->exists() ||
+                    Recibo::where('tarifa_id', $actual->id)->exists()
+                ) {
                     return false;
                 }
 
@@ -278,49 +289,50 @@ class TarifaController extends Controller
             ],
             [
                 'cantidad_pajas.required_if' =>
-                    'Debe indicar la cantidad de pajas.',
+                'Debe indicar la cantidad de pajas.',
 
                 'cantidad_pajas.integer' =>
-                    'La cantidad de pajas debe ser un número entero.',
+                'La cantidad de pajas debe ser un número entero.',
 
                 'cantidad_pajas.min' =>
-                    'Para 1/2 paja, 1 paja o 2 pajas utilice las opciones del listado.',
+                'Para 1/2 paja, 1 paja o 2 pajas utilice las opciones del listado.',
 
                 'precio_por_m3.required' =>
-                    'Debe indicar el precio normal por m³.',
+                'Debe indicar el precio fijo de la tarifa.',
 
                 'precio_por_m3.numeric' =>
-                    'El precio por m³ debe ser un valor numérico.',
+                'El precio fijo de la tarifa debe ser un valor numérico.',
 
                 'precio_por_m3.gt' =>
-                    'El precio por m³ debe ser mayor que cero.',
+                'El precio fijo de la tarifa debe ser mayor que cero.',
+
 
                 'precio_exceso_m3.required' =>
-                    'Debe indicar el precio por m³ de exceso.',
+                'Debe indicar el precio por m³ de exceso.',
 
                 'precio_exceso_m3.numeric' =>
-                    'El precio por exceso debe ser un valor numérico.',
+                'El precio por exceso debe ser un valor numérico.',
 
                 'precio_exceso_m3.gt' =>
-                    'El precio por exceso debe ser mayor que cero.',
+                'El precio por exceso debe ser mayor que cero.',
 
                 'mora_porcentaje.numeric' =>
-                    'El porcentaje de mora debe ser un valor numérico.',
+                'El porcentaje de mora debe ser un valor numérico.',
 
                 'mora_porcentaje.gt' =>
-                    'El porcentaje de mora debe ser mayor que cero.',
+                'El porcentaje de mora debe ser mayor que cero.',
 
                 'mora_porcentaje.max' =>
-                    'El porcentaje de mora no puede ser mayor al 100%.',
+                'El porcentaje de mora no puede ser mayor al 100%.',
 
                 'mora_monto_fijo.numeric' =>
-                    'El monto fijo de mora debe ser un valor numérico.',
+                'El monto fijo de mora debe ser un valor numérico.',
 
                 'mora_monto_fijo.gt' =>
-                    'El monto fijo de mora debe ser mayor que cero.',
+                'El monto fijo de mora debe ser mayor que cero.',
 
                 'vigente_hasta.after_or_equal' =>
-                    'La fecha de finalización no puede ser anterior a la fecha de inicio.',
+                'La fecha de finalización no puede ser anterior a la fecha de inicio.',
             ]
         );
 
@@ -342,7 +354,7 @@ class TarifaController extends Controller
         ) {
             throw ValidationException::withMessages([
                 'mora_porcentaje' =>
-                    'Debe configurar al menos una mora: porcentaje, monto fijo o ambos.',
+                'Debe configurar al menos una mora: porcentaje, monto fijo o ambos.',
             ]);
         }
 
@@ -385,23 +397,22 @@ class TarifaController extends Controller
     ): float {
         return match ($tipoSelector) {
             '1/2 paja' =>
-                self::CAPACIDAD_POR_PAJA / 2,
+            self::CAPACIDAD_POR_PAJA / 2,
 
             '1 paja' =>
-                self::CAPACIDAD_POR_PAJA,
+            self::CAPACIDAD_POR_PAJA,
 
             '2 pajas' =>
-                self::CAPACIDAD_POR_PAJA * 2,
+            self::CAPACIDAD_POR_PAJA * 2,
 
-            'otra_cantidad' =>
-                ((int) $cantidadPajas)
+            'otra_cantidad' => ((int) $cantidadPajas)
                 * self::CAPACIDAD_POR_PAJA,
 
             default =>
-                throw ValidationException::withMessages([
-                    'tipo_selector' =>
-                        'El tipo de tarifa seleccionado no es válido.',
-                ]),
+            throw ValidationException::withMessages([
+                'tipo_selector' =>
+                'El tipo de tarifa seleccionado no es válido.',
+            ]),
         };
     }
 }

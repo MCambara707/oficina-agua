@@ -259,23 +259,13 @@
                     ? (float) $tarifa->capacidad
                     : 0.00;
 
-                    $precioBase = $tarifa
+                    $precioTarifa = $tarifa
                     ? (float) $tarifa->precio_por_m3
                     : 0.00;
 
                     $precioExceso = $tarifa
                     ? (float) $tarifa->precio_exceso_m3
                     : 0.00;
-
-
-                    /*
-                    * Consumo que se encuentra dentro de la
-                    * capacidad contratada/configurada.
-                    */
-                    $consumoNormal = min(
-                    $consumo,
-                    $capacidad
-                    );
 
 
                     /*
@@ -288,11 +278,11 @@
 
 
                     /*
-                    * Monto correspondiente a la capacidad
-                    * completa contratada.
+                    * El monto normal corresponde al precio fijo
+                    * de la tarifa contratada.
                     */
                     $montoNormal =
-                    $capacidad * $precioBase;
+                    $precioTarifa;
 
                     /*
                     * Monto correspondiente exclusivamente

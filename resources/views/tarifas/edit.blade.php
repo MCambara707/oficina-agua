@@ -198,7 +198,7 @@
 
                 <div class="form-group">
                     <label for="precio_por_m3">
-                        Precio por m³ (Q) *
+                        Precio fijo de la tarifa (Q) *
                     </label>
 
                     <input
@@ -214,7 +214,7 @@
                     >
 
                     <small class="form-text text-muted">
-                        Precio aplicado al consumo dentro de la capacidad contratada.
+                        Monto fijo que se cobrará por la tarifa contratada, independientemente del consumo dentro de su capacidad.
                     </small>
                 </div>
 
