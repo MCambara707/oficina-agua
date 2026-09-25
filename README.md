@@ -18,6 +18,7 @@ Universidad Mariano Gálvez de Guatemala, 2026.
 
 - Repositorio: https://github.com/MCambara707/oficina-agua
 - Tablero Jira: https://miumg-team-dreamteam.atlassian.net/jira/software/projects/AQ/boards/2/backlog
+- Pagina web con AWS: https://aquatech-gt.duckdns.org/login
 
 ## Roles del sistema
 
