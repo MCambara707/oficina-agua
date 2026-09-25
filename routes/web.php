@@ -4,11 +4,14 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\AltaServicioController;
 use App\Http\Controllers\AutenticacionController;
+use App\Http\Controllers\AvisoPublicoController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ContadorController;
 use App\Http\Controllers\DashboardEstadoCuentaController;
+use App\Http\Controllers\LandingAdminController;
 use App\Http\Controllers\LecturaController;
 use App\Http\Controllers\PagoController;
+use App\Http\Controllers\PreguntaFrecuenteController;
 use App\Http\Controllers\ReciboController;
 use App\Http\Controllers\ServicioController;
 use App\Http\Controllers\TarifaController;
@@ -22,8 +25,10 @@ use App\Http\Controllers\UsuarioController;
 */
 
 // Entrada al sistema según la sesión y el rol del usuario.
-Route::get('/', [AutenticacionController::class, 'inicio'])
-    ->name('inicio');
+Route::get(
+    '/',
+    [AutenticacionController::class, 'inicio']
+)->name('inicio');
 
 
 // AQ-69:
@@ -80,12 +85,17 @@ Route::middleware(['auth', 'auditoria'])->group(function () {
     Route::middleware('rol:Administrador')->group(function () {
 
         /*
+         * ================================================================
+         * USUARIOS
+         * ================================================================
+         *
          * AQ-67:
          * Mantenimiento de usuarios.
          *
          * Los usuarios no se eliminan físicamente.
          * Se utiliza activación / desactivación.
          */
+
         Route::resource(
             'usuarios',
             UsuarioController::class
@@ -99,6 +109,138 @@ Route::middleware(['auth', 'auditoria'])->group(function () {
             '/usuarios/{usuario}/estado',
             [UsuarioController::class, 'cambiarEstado']
         )->name('usuarios.cambiar-estado');
+
+
+        /*
+         * ================================================================
+         * AQ-70 - ADMINISTRACIÓN DE LANDING PÚBLICA
+         * ================================================================
+         *
+         * Permite administrar:
+         *
+         * - información principal;
+         * - quiénes somos;
+         * - información de contacto;
+         * - avisos públicos;
+         * - preguntas frecuentes.
+         */
+
+        Route::prefix('landing')
+            ->name('landing.')
+            ->group(function () {
+
+                /*
+                 * --------------------------------------------------------
+                 * COMPATIBILIDAD CON LA URL ANTERIOR
+                 * --------------------------------------------------------
+                 *
+                 * Si alguien entra a /landing/configuracion,
+                 * será enviado a Información principal.
+                 */
+
+                Route::get(
+                    '/configuracion',
+                    function () {
+                        return redirect()
+                            ->route('landing.informacion');
+                    }
+                )->name('configuracion');
+
+
+                /*
+                 * --------------------------------------------------------
+                 * INFORMACIÓN PRINCIPAL
+                 * --------------------------------------------------------
+                 */
+
+                Route::get(
+                    '/informacion',
+                    [LandingAdminController::class, 'informacion']
+                )->name('informacion');
+
+
+                Route::put(
+                    '/informacion',
+                    [
+                        LandingAdminController::class,
+                        'actualizarInformacion',
+                    ]
+                )->name('informacion.update');
+
+
+                /*
+                 * --------------------------------------------------------
+                 * QUIÉNES SOMOS
+                 * --------------------------------------------------------
+                 */
+
+                Route::get(
+                    '/quienes-somos',
+                    [LandingAdminController::class, 'quienesSomos']
+                )->name('quienes-somos');
+
+
+                Route::put(
+                    '/quienes-somos',
+                    [
+                        LandingAdminController::class,
+                        'actualizarQuienesSomos',
+                    ]
+                )->name('quienes-somos.update');
+
+
+                /*
+                 * --------------------------------------------------------
+                 * CONTACTO
+                 * --------------------------------------------------------
+                 */
+
+                Route::get(
+                    '/contacto',
+                    [LandingAdminController::class, 'contacto']
+                )->name('contacto');
+
+
+                Route::put(
+                    '/contacto',
+                    [
+                        LandingAdminController::class,
+                        'actualizarContacto',
+                    ]
+                )->name('contacto.update');
+
+
+                /*
+                 * --------------------------------------------------------
+                 * AVISOS PÚBLICOS
+                 * --------------------------------------------------------
+                 */
+
+                Route::resource(
+                    'avisos',
+                    AvisoPublicoController::class
+                )
+                    ->parameters([
+                        'avisos' => 'aviso',
+                    ])
+                    ->except('show');
+
+
+                /*
+                 * --------------------------------------------------------
+                 * PREGUNTAS FRECUENTES
+                 * --------------------------------------------------------
+                 */
+
+                Route::resource(
+                    'preguntas',
+                    PreguntaFrecuenteController::class
+                )
+                    ->parameters([
+                        'preguntas' => 'pregunta',
+                    ])
+                    ->except('show');
+            });
     });
 
 
@@ -130,6 +272,7 @@ Route::middleware(['auth', 'auditoria'])->group(function () {
          * No utiliza una tabla adicional.
          * Coordina las entidades existentes de Cliente y Contador.
          */
+
         Route::get(
             '/alta-servicio',
             [AltaServicioController::class, 'create']
@@ -201,8 +344,17 @@ Route::middleware(['auth', 'auditoria'])->group(function () {
             TarifaController::class
         )->except('show');
 
-        Route::get('/recibos', [ReciboController::class, 'index'])
-            ->name('recibos.index');
+
+        /*
+         * ================================================================
+         * HISTORIAL DE RECIBOS
+         * ================================================================
+         */
+
+        Route::get(
+            '/recibos',
+            [ReciboController::class, 'index']
+        )->name('recibos.index');
 
 
         /*
