@@ -421,103 +421,87 @@ class LecturaController extends Controller
             ]);
     }
 
-    /**
-     * Calcula el monto correspondiente al consumo mensual.
-     *
-     * Hasta la capacidad:
-     *
-     * consumo × precio normal
-     *
-     * Si existe exceso:
-     *
-     * capacidad × precio normal
-     * +
-     * exceso × precio por exceso
+   /**
+ * Calcula el monto correspondiente al consumo mensual.
+ *
+ * La tarifa tiene un precio fijo que cubre toda
+ * la capacidad contratada.
+ *
+ * Si existe exceso:
+ *
+ * precio fijo + exceso × precio por exceso
+ */
+private function calcularMonto(
+    $tarifa,
+    float $consumo
+): array {
+    $capacidad =
+        (float) $tarifa->capacidad;
+
+    /*
+     * Aunque la columna se llama precio_por_m3,
+     * ahora su valor representa el precio fijo
+     * de la tarifa contratada.
      */
-    private function calcularMonto(
-        $tarifa,
-        float $consumo
-    ): array {
-        $capacidad =
-            (float) $tarifa->capacidad;
+    $precioTarifa =
+        (float) $tarifa->precio_por_m3;
 
-        $precioBase =
-            (float) $tarifa->precio_por_m3;
+    $precioExceso =
+        (float) $tarifa->precio_exceso_m3;
 
-        $precioExceso =
-            (float) $tarifa->precio_exceso_m3;
+    /*
+     * Calculamos únicamente los metros cúbicos
+     * que superan la capacidad contratada.
+     */
+    $consumoExceso = max(
+        $consumo - $capacidad,
+        0
+    );
 
-        /*
-         * =========================================================
-         * SIN EXCESO
-         * =========================================================
-         */
-        if ($consumo <= $capacidad) {
+    /*
+     * El exceso sí se cobra por cada m³ excedido.
+     */
+    $montoExceso =
+        $consumoExceso * $precioExceso;
 
+    /*
+     * El precio de la tarifa es FIJO.
+     * No se multiplica por consumo ni por capacidad.
+     */
     $monto = Redondeo::monto(
-        $capacidad * $precioBase
+        $precioTarifa + $montoExceso
     );
 
-    $observacion = sprintf(
-        'Consumo: %.3f m³. '
-        . 'Capacidad contratada: %.3f m³. '
-        . 'Se cobra la tarifa completa. '
-        . 'Sin exceso.',
-        $consumo,
-        $capacidad
-    );
+    if ($consumoExceso > 0) {
+        $observacion = sprintf(
+            'Consumo: %.3f m³. '
+            . 'Capacidad contratada: %.3f m³. '
+            . 'Tarifa fija: Q%.2f. '
+            . 'Exceso: %.3f m³. '
+            . 'Monto exceso: Q%.2f.',
+            $consumo,
+            $capacidad,
+            $precioTarifa,
+            $consumoExceso,
+            $montoExceso
+        );
+    } else {
+        $observacion = sprintf(
+            'Consumo: %.3f m³. '
+            . 'Capacidad contratada: %.3f m³. '
+            . 'Tarifa fija: Q%.2f. '
+            . 'Sin exceso.',
+            $consumo,
+            $capacidad,
+            $precioTarifa
+        );
+    }
 
     return [
         $monto,
         $observacion,
     ];
-
-        }
-
-        /*
-         * =========================================================
-         * CON EXCESO
-         * =========================================================
-         */
-        $consumoExceso =
-            $consumo - $capacidad;
-
-        $montoNormal =
-            $capacidad * $precioBase;
-
-        $montoExceso =
-            $consumoExceso * $precioExceso;
-
-        $monto = Redondeo::monto(
-            $montoNormal + $montoExceso
-        );
-
-        $observacion = sprintf(
-            'Consumo: %.3f m³. '
-            . 'Capacidad: %.3f m³. '
-            . 'Exceso: %.3f m³. '
-            . 'Monto exceso: Q%.2f.',
-            $consumo,
-            $capacidad,
-            $consumoExceso,
-            $montoExceso
-        );
-
-        return [
-            $monto,
-            $observacion,
-        ];
-    }
-
-    /**
-     * Elimina ceros decimales innecesarios en valores de m³.
-     *
-     * Ejemplos:
-     *
-     * 60.000  → 60
-     * 60.500  → 60.5
-     * 60.125  → 60.125
-     */
+}
     private function formatearM3(float $valor): string
     {
         return rtrim(

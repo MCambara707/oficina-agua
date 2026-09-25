@@ -65,7 +65,7 @@
                             <th>Nombre</th>
                             <th>Tipo</th>
                             <th>Capacidad</th>
-                            <th>Precio/m³</th>
+                            <th>Precio fijo</th>
                             <th>Exceso/m³</th>
                             <th>Mora %</th>
                             <th>Mora fija</th>
