@@ -454,22 +454,24 @@ class LecturaController extends Controller
          */
         if ($consumo <= $capacidad) {
 
-            $monto = Redondeo::monto(
-                $consumo * $precioBase
-            );
+    $monto = Redondeo::monto(
+        $capacidad * $precioBase
+    );
 
-            $observacion = sprintf(
-                'Consumo: %.3f m³. '
-                . 'Capacidad: %.3f m³. '
-                . 'Sin exceso.',
-                $consumo,
-                $capacidad
-            );
+    $observacion = sprintf(
+        'Consumo: %.3f m³. '
+        . 'Capacidad contratada: %.3f m³. '
+        . 'Se cobra la tarifa completa. '
+        . 'Sin exceso.',
+        $consumo,
+        $capacidad
+    );
 
-            return [
-                $monto,
-                $observacion,
-            ];
+    return [
+        $monto,
+        $observacion,
+    ];
+
         }
 
         /*
