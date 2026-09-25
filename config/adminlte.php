@@ -430,6 +430,101 @@ return [
 
 
         /*
+         * AQ-70:
+         * Administración del contenido público de AquaTech GT.
+         * Disponible únicamente para Administrador.
+         */
+        [
+            'text' =>
+                'Landing page',
+
+            'icon' =>
+                'bi bi-window',
+
+            'can' =>
+                'administrar-landing',
+
+            'submenu' => [
+
+                [
+                    'text' =>
+                        'Información principal',
+
+                    'route' =>
+                        'landing.informacion',
+
+                    'icon' =>
+                        'bi bi-house-door',
+
+                    'active' => [
+                        'landing/informacion*',
+                    ],
+                ],
+
+                [
+                    'text' =>
+                        'Quiénes somos',
+
+                    'route' =>
+                        'landing.quienes-somos',
+
+                    'icon' =>
+                        'bi bi-buildings',
+
+                    'active' => [
+                        'landing/quienes-somos*',
+                    ],
+                ],
+
+                [
+                    'text' =>
+                        'Contacto',
+
+                    'route' =>
+                        'landing.contacto',
+
+                    'icon' =>
+                        'bi bi-telephone',
+
+                    'active' => [
+                        'landing/contacto*',
+                    ],
+                ],
+
+                [
+                    'text' =>
+                        'Avisos',
+
+                    'route' =>
+                        'landing.avisos.index',
+
+                    'icon' =>
+                        'bi bi-megaphone',
+
+                    'active' => [
+                        'landing/avisos*',
+                    ],
+                ],
+
+                [
+                    'text' =>
+                        'Preguntas frecuentes',
+
+                    'route' =>
+                        'landing.preguntas.index',
+
+                    'icon' =>
+                        'bi bi-question-circle',
+
+                    'active' => [
+                        'landing/preguntas*',
+                    ],
+                ],
+            ],
+        ],
+
+
+        /*
         |--------------------------------------------------------------------------
         | OPERACIÓN
         |--------------------------------------------------------------------------
