@@ -67,6 +67,15 @@
     max-width: 100%;
 }
 
+.input-group > .selector-documento {
+    flex: 0 0 5.5rem;
+    width: 5.5rem;
+}
+
+.notificacion-validacion {
+    max-width: min(24rem, calc(100vw - 2rem));
+}
+
 
 /* ==========================================================================
    CONTADORES

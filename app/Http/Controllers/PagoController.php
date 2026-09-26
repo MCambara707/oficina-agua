@@ -63,6 +63,11 @@ class PagoController extends Controller
                                     'dpi',
                                     'like',
                                     '%' . $busqueda . '%'
+                                )
+                                ->orWhere(
+                                    'nit',
+                                    'like',
+                                    '%' . $busqueda . '%'
                                 );
                         }
                     );

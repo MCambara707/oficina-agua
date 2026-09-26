@@ -1,3 +1,63 @@
+# Parcial 2 - Modificaciones
+
+**Nombre:** Manuel Alexander Monzón Palma
+**Carnet:** 0905-23-4539
+
+## Cambios asignados
+
+- **#7:** Validación de teléfono, DPI/NIT o correo mediante eventos `input` o `blur`, mostrando retroalimentación visual mediante borde verde/rojo y mensaje corto, manteniendo la validación del backend.
+- **#10:** Temporizador de inactividad mediante `setTimeout`. Después de aproximadamente 2 minutos se muestra un modal con cuenta regresiva y la opción **"Seguir conectado"**. No cierra realmente la sesión.
+
+### #7 — Validación de campos
+
+Disponible en Crear/Editar Cliente, Alta de servicio y Crear/Editar Usuario. Los eventos `input` y `blur` muestran borde verde/rojo y una notificación flotante breve, sin agregar filas debajo del campo. Los mensajes asociados al campo siguen disponibles para lectores de pantalla.
+
+- **Documento:** selector DPI/NIT junto al número. El DPI exige exactamente 13 dígitos. El NIT admite de 2 a 13 caracteres sin contar el guion opcional antes del último: inicia del 1 al 9, continúa con números y termina en un número o K. Se normaliza a mayúsculas y sin guion antes de comprobar duplicados.
+- **Alcance:** se valida el formato, no el dígito verificador ni la existencia oficial en SAT/RENAP. El mensaje «Formato válido» no acredita una identidad. No se consultan servicios externos ni se agregan paquetes.
+- **Teléfono:** opcional, máximo 25 caracteres; vacío queda neutral.
+- **Correo:** obligatorio, máximo 150 caracteres. La consulta autenticada usa el validador de Laravel. Un formato válido no garantiza disponibilidad: `unique` sigue comprobándose al guardar.
+- **Titular:** si el documento está registrado en AquaTech, se completa Nombre con el titular local. Al cambiar documento o tipo se retira el autocompletado anterior si el usuario no lo modificó. Se conservan las correcciones manuales y el nombre propio al editar. Si no se encuentra, se permite escribir el nombre; nunca se inventa un titular.
+- **Duplicados:** autocompletar no autoriza crear otro cliente con el mismo documento. En Alta se indica utilizar «Cliente existente»; la selección sigue siendo del usuario.
+- Las consultas usan POST, CSRF, autenticación, permisos por rol y límite de solicitudes. Se espera una pausa de 350 ms al escribir y se consulta al salir. Las respuestas anteriores se cancelan o descartan.
+- Los errores al guardar aparecen como notificación y permanecen asociados al campo mientras su valor no cambie. Una falla de red nunca se interpreta como «titular inexistente».
+- La migración `2026_09_26_000001_add_nit_to_clientes_table.php` incorpora `nit` único y nullable, y permite `dpi` nullable. Cada formulario guarda el documento seleccionado en su propia columna. Los datos históricos se conservan; al modificarlos se exigen las reglas actuales.
+- Referencias de formato: [RENAP: estructura del CUI](https://www.renap.gob.gt/noticias/que-es-el-dpi-y-por-que-tengo-cui) y [SAT: esquema FEL](https://portal.sat.gob.gt/portal/descarga/6524/factura-electronica-fel/25559/gt-documento-0-1-0.pdf).
+
+### #10 — Inactividad
+
+Solo se inicializa en el panel autenticado mediante un marcador Blade. No se ejecuta en login ni se incorpora a la vista independiente de impresión.
+
+Un `setTimeout` comprueba los 120 segundos desde la última actividad. Click, teclado, desplazamiento y acciones táctiles actualizan esa fecha sin crear un temporizador por cada evento. Al cumplirse el plazo, Bootstrap muestra un modal con icono, cuenta `00:30`, progreso y el botón **Seguir conectado**.
+
+La cuenta comienza cuando termina de abrirse el modal. Se utiliza como máximo un timeout principal y un intervalo de cuenta regresiva. Continuar cierra el modal, limpia la cuenta y comienza otro ciclo. Al llegar a cero aparece un mensaje de demostración y la sesión permanece activa. Esta función no envía peticiones de logout ni de renovación de la sesión del servidor.
+
+### Comprobación manual del parcial
+
+1. En Crear Cliente seleccionar DPI: vacío, letras o menos de 13 dígitos muestran error. Con 13 dígitos se consulta el titular. Repetir en Editar Cliente y Alta con cliente nuevo.
+2. Cambiar a NIT: el número anterior se limpia. Probar un NIT con y sin guion, una K minúscula y valores inválidos (letras intermedias, dos guiones o longitud excesiva). El formato no demuestra que el NIT haya sido emitido.
+3. Usar un documento registrado: se completa Nombre. Cambiar el documento: se retira ese autocompletado; una corrección manual no se borra. Un documento no registrado no genera un nombre.
+4. Dejar teléfono vacío: neutral. Probar `usuario@` y `usuario@correo.com` en usuarios. Al guardar un duplicado, Laravel conserva el rechazo. Los avisos flotan y no desplazan los controles.
+5. Esperar 2 minutos sin actividad en el panel: aparece el modal. Pulsar **Seguir conectado** y comprobar otro ciclo. Dejar llegar a cero: no se cierra sesión y se puede continuar. En login no aparece.
+6. Recargar/cambiar de pantalla inicia otro ciclo. No hay contador compartido entre páginas.
+
+Aplicar únicamente la migración de documentos en una instalación existente:
+
+```bash
+php artisan migrate --path=database/migrations/2026_09_26_000001_add_nit_to_clientes_table.php
+```
+
+Comandos de verificación:
+
+```bash
+npm run build
+php artisan test --compact
+node tests/JavaScript/validacion-campos.test.mjs
+git status
+git diff
+```
+
+Las pruebas PHP cubren consultas, permisos, respuesta mínima, persistencia DPI/NIT, duplicados, conservación de datos e integración de formularios. Las pruebas JavaScript usan un DOM y reloj simulados; no sustituyen la revisión visual en navegador.
+
 <img width="1933" height="506" alt="image" src="https://github.com/user-attachments/assets/c68dc798-1b88-48f5-8d61-bdc5c8d1541c" />
 
 # Prototipo Sistema de gestión de agua potable.

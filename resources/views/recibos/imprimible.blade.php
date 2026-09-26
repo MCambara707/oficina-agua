@@ -584,8 +584,8 @@
             </div>
 
             <div class="dato">
-                <strong>DPI</strong>
-                {{ $cliente->dpi ?? 'No registrado' }}
+                <strong>{{ $cliente->dpi ? 'DPI' : 'NIT' }}</strong>
+                {{ $cliente->dpi ?? $cliente->nit ?? 'No registrado' }}
             </div>
 
             <div class="dato">

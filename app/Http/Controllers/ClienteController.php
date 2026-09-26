@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cliente;
+use App\Support\DocumentoCliente;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class ClienteController extends Controller
 {
@@ -15,6 +15,7 @@ class ClienteController extends Controller
      * Permite buscar por:
      * - nombre;
      * - DPI;
+     * - NIT;
      * - teléfono.
      */
     public function index(Request $request)
@@ -39,6 +40,12 @@ class ClienteController extends Controller
 
                             $q->orWhere(
                                 'dpi',
+                                'like',
+                                '%' . $busqueda . '%'
+                            );
+
+                            $q->orWhere(
+                                'nit',
                                 'like',
                                 '%' . $busqueda . '%'
                             );
@@ -76,23 +83,43 @@ class ClienteController extends Controller
 
 
     /**
+     * Consulta orientativa del titular para los formularios de clientes.
+     * Incluye clientes inactivos porque su documento también debe ser único.
+     */
+    public function consultarDocumento(Request $request)
+    {
+        DocumentoCliente::prepararSolicitud($request);
+
+        $datos = $request->validate(
+            DocumentoCliente::reglas(unico: false),
+            DocumentoCliente::mensajes()
+        );
+
+        $campo = $datos['tipo_documento'];
+        $cliente = Cliente::where($campo, $datos[$campo])->first(['nombre']);
+
+        return response()->json(
+            $cliente
+                ? ['encontrado' => true, 'nombre' => $cliente->nombre]
+                : ['encontrado' => false]
+        )->header('Cache-Control', 'private, no-store');
+    }
+
+
+    /**
      * Guarda un cliente nuevo.
      */
     public function store(Request $request)
     {
+        DocumentoCliente::prepararSolicitud($request);
+
         $datos = $request->validate(
             [
+                ...DocumentoCliente::reglas(),
                 'nombre' => [
                     'required',
                     'string',
                     'max:150',
-                ],
-
-                'dpi' => [
-                    'required',
-                    'string',
-                    'max:20',
-                    Rule::unique('clientes', 'dpi'),
                 ],
 
                 'telefono' => [
@@ -113,20 +140,12 @@ class ClienteController extends Controller
                 ],
             ],
             [
+                ...DocumentoCliente::mensajes(),
                 'nombre.required' =>
                     'El nombre del cliente es obligatorio.',
 
                 'nombre.max' =>
                     'El nombre no puede exceder los 150 caracteres.',
-
-                'dpi.required' =>
-                    'El DPI del cliente es obligatorio.',
-
-                'dpi.unique' =>
-                    'Ya existe un cliente registrado con este DPI.',
-
-                'dpi.max' =>
-                    'El DPI no puede exceder los 20 caracteres.',
 
                 'telefono.max' =>
                     'El teléfono no puede exceder los 25 caracteres.',
@@ -149,7 +168,8 @@ class ClienteController extends Controller
          * Limpiamos espacios innecesarios.
          */
         $datos['nombre'] = trim($datos['nombre']);
-        $datos['dpi'] = trim($datos['dpi']);
+        $datos = array_merge($datos, DocumentoCliente::paraGuardar($datos));
+        unset($datos['tipo_documento']);
 
         $datos['telefono'] =
             isset($datos['telefono'])
@@ -193,23 +213,15 @@ class ClienteController extends Controller
         Request $request,
         Cliente $cliente
     ) {
+        DocumentoCliente::prepararSolicitud($request);
+
         $datos = $request->validate(
             [
+                ...DocumentoCliente::reglas(ignorarCliente: $cliente->id),
                 'nombre' => [
                     'required',
                     'string',
                     'max:150',
-                ],
-
-                'dpi' => [
-                    'required',
-                    'string',
-                    'max:20',
-
-                    Rule::unique(
-                        'clientes',
-                        'dpi'
-                    )->ignore($cliente->id),
                 ],
 
                 'telefono' => [
@@ -230,20 +242,12 @@ class ClienteController extends Controller
                 ],
             ],
             [
+                ...DocumentoCliente::mensajes(),
                 'nombre.required' =>
                     'El nombre del cliente es obligatorio.',
 
                 'nombre.max' =>
                     'El nombre no puede exceder los 150 caracteres.',
-
-                'dpi.required' =>
-                    'El DPI del cliente es obligatorio.',
-
-                'dpi.unique' =>
-                    'Ya existe otro cliente registrado con este DPI.',
-
-                'dpi.max' =>
-                    'El DPI no puede exceder los 20 caracteres.',
 
                 'telefono.max' =>
                     'El teléfono no puede exceder los 25 caracteres.',
@@ -261,7 +265,8 @@ class ClienteController extends Controller
          * Limpiamos espacios innecesarios.
          */
         $datos['nombre'] = trim($datos['nombre']);
-        $datos['dpi'] = trim($datos['dpi']);
+        $datos = array_merge($datos, DocumentoCliente::paraGuardar($datos));
+        unset($datos['tipo_documento']);
 
         $datos['telefono'] =
             isset($datos['telefono'])

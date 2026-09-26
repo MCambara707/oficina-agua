@@ -11,11 +11,12 @@
     <div class="card">
         <div class="card-body">
 
-            @if ($errors->any())
+            @php($erroresGenerales = collect($errors->getMessages())->except(['email'])->flatten()->all())
+            @if (count($erroresGenerales))
                 <div class="alert alert-danger">
                     <ul class="mb-0">
 
-                        @foreach ($errors->all() as $error)
+                        @foreach ($erroresGenerales as $error)
                             <li>
                                 {{ $error }}
                             </li>
@@ -28,6 +29,8 @@
             <form
                 action="{{ route('usuarios.store') }}"
                 method="POST"
+                data-validacion-campos
+                data-validacion-correo-url="{{ route('usuarios.validar-correo') }}"
             >
 
                 @csrf
@@ -58,15 +61,19 @@
                     </label>
 
                     <input
-                        type="email"
-                        name="email"
+                        type="text"
+                        inputmode="email"
+                        name="email" data-validacion="email" data-validacion-max="150"
+                        aria-describedby="email-error email-feedback"
+                        aria-invalid="{{ $errors->has('email') ? 'true' : 'false' }}"
                         id="email"
-                        class="form-control"
+                        class="form-control @error('email') is-invalid @enderror"
                         maxlength="150"
                         value="{{ old('email') }}"
                         required
                         autocomplete="email"
                     >
+                    @include('partials.validacion-campo', ['campo' => 'email'])
 
                     <small class="form-text text-muted">
                         El correo debe ser único dentro del sistema.

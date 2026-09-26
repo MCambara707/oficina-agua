@@ -32,7 +32,8 @@ class ReciboController extends Controller
                         ->orWhereHas('lectura.contador.cliente', function ($cliente) use ($busqueda) {
                             $cliente->where(function ($cliente) use ($busqueda) {
                                 $cliente->where('nombre', 'like', "%{$busqueda}%")
-                                    ->orWhere('dpi', 'like', "%{$busqueda}%");
+                                    ->orWhere('dpi', 'like', "%{$busqueda}%")
+                                    ->orWhere('nit', 'like', "%{$busqueda}%");
                             });
                         });
                 });

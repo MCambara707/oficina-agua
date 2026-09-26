@@ -108,7 +108,7 @@
                                 id="busqueda"
                                 class="form-control"
                                 value="{{ $busqueda }}"
-                                placeholder="Nombre, DPI o número de contador"
+                                placeholder="Nombre, DPI, NIT o número de contador"
                                 autocomplete="off"
                             >
 
@@ -434,7 +434,7 @@
                             </th>
 
                             <th>
-                                DPI
+                                DPI / NIT
                             </th>
 
                             <th>
@@ -531,10 +531,11 @@
                                 </td>
 
 
-                                {{-- DPI --}}
+                                {{-- DOCUMENTO --}}
                                 <td>
 
                                     {{ $cliente->dpi
+                                        ?? $cliente->nit
                                         ?? 'No registrado'
                                     }}
 
@@ -757,7 +758,8 @@
                                                     [
                                                         'q' =>
                                                             $cliente->dpi
-                                                            ?: $cliente->nombre,
+                                                            ?? $cliente->nit
+                                                            ?? $cliente->nombre,
                                                     ]
                                                 ) }}"
                                                 class="btn btn-sm btn-success"
