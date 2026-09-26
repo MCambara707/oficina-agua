@@ -96,6 +96,12 @@ Route::middleware(['auth', 'auditoria'])->group(function () {
          * Se utiliza activación / desactivación.
          */
 
+        Route::post(
+            '/usuarios/validar-correo',
+            [UsuarioController::class, 'validarCorreo']
+        )->middleware('throttle:60,1')->name('usuarios.validar-correo');
+
+
         Route::resource(
             'usuarios',
             UsuarioController::class
@@ -290,6 +296,12 @@ Route::middleware(['auth', 'auditoria'])->group(function () {
          * CLIENTES
          * ================================================================
          */
+
+        Route::post(
+            '/clientes/consultar-documento',
+            [ClienteController::class, 'consultarDocumento']
+        )->middleware('throttle:60,1')->name('clientes.consultar-documento');
+
 
         Route::resource(
             'clientes',

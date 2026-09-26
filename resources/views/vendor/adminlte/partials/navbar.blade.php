@@ -1,4 +1,5 @@
-<nav class="app-header {{ config('adminlte.classes_topnav', 'navbar-expand bg-body') }} navbar" aria-label="Barra de herramientas">
+<nav class="app-header {{ config('adminlte.classes_topnav', 'navbar-expand bg-body') }} navbar" aria-label="Barra de herramientas"
+     @auth data-authenticated="true" @endauth>
     <div class="{{ config('adminlte.classes_topnav_container', 'container-fluid') }}">
         <ul class="navbar-nav align-items-center">
             <li class="nav-item">

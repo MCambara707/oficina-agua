@@ -6,6 +6,7 @@ use App\Models\Cliente;
 use App\Models\Contador;
 use App\Models\Servicio;
 use App\Models\Tarifa;
+use App\Support\DocumentoCliente;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -82,6 +83,8 @@ class AltaServicioController extends Controller
      */
     public function store(Request $request)
     {
+        DocumentoCliente::prepararSolicitud($request);
+
         /*
          * =========================================================
          * VALIDACIÓN GENERAL
@@ -89,6 +92,7 @@ class AltaServicioController extends Controller
          */
         $datos = $request->validate(
             [
+                ...DocumentoCliente::reglas(requerido: $request->input('tipo_cliente') === 'nuevo'),
                 /*
                  * Define qué modalidad de alta se utilizará.
                  */
@@ -131,17 +135,6 @@ class AltaServicioController extends Controller
                     'required_if:tipo_cliente,nuevo',
                     'string',
                     'max:150',
-                ],
-
-                'dpi' => [
-                    'nullable',
-                    'required_if:tipo_cliente,nuevo',
-                    'string',
-                    'max:20',
-                    Rule::unique(
-                        'clientes',
-                        'dpi'
-                    ),
                 ],
 
                 'telefono' => [
@@ -227,6 +220,7 @@ class AltaServicioController extends Controller
                 ],
             ],
             [
+                ...DocumentoCliente::mensajes(),
                 /*
                  * Tipo de cliente.
                  */
@@ -256,15 +250,13 @@ class AltaServicioController extends Controller
                 'nombre.max' =>
                     'El nombre del cliente no puede exceder los 150 caracteres.',
 
-                'dpi.required_if' =>
-                    'El DPI del cliente es obligatorio.',
-
                 'dpi.unique' =>
                     'Ya existe un cliente registrado con este DPI. '
                     . 'Utilice la opción de cliente existente.',
 
-                'dpi.max' =>
-                    'El DPI no puede exceder los 20 caracteres.',
+                'nit.unique' =>
+                    'Ya existe un cliente registrado con este NIT. '
+                    . 'Utilice la opción de cliente existente.',
 
                 'telefono.max' =>
                     'El teléfono no puede exceder los 25 caracteres.',
@@ -374,8 +366,7 @@ class AltaServicioController extends Controller
             $datos['nombre'] =
                 trim($datos['nombre']);
 
-            $datos['dpi'] =
-                trim($datos['dpi']);
+            $datos = array_merge($datos, DocumentoCliente::paraGuardar($datos));
 
             $datos['telefono'] =
                 isset($datos['telefono'])
@@ -458,6 +449,9 @@ class AltaServicioController extends Controller
 
                             'dpi' =>
                                 $datos['dpi'],
+
+                            'nit' =>
+                                $datos['nit'],
 
                             'telefono' =>
                                 $datos['telefono'] ?? null,

@@ -129,7 +129,7 @@
                                 id="q"
                                 class="form-control"
                                 value="{{ $busqueda ?? '' }}"
-                                placeholder="N.° recibo, nombre, DPI o contador"
+                                placeholder="N.° recibo, nombre, DPI, NIT o contador"
                                 autocomplete="off"
                             >
 
@@ -188,7 +188,7 @@
 
                             <th>Cliente</th>
 
-                            <th>DPI</th>
+                            <th>DPI / NIT</th>
 
                             <th>Contador</th>
 
@@ -262,10 +262,10 @@
                                 </td>
 
 
-                                {{-- DPI --}}
+                                {{-- DOCUMENTO --}}
                                 <td>
 
-                                    {{ $cliente?->dpi ?? 'No registrado' }}
+                                    {{ $cliente?->dpi ?? $cliente?->nit ?? 'No registrado' }}
 
                                 </td>
 

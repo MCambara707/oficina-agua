@@ -44,7 +44,8 @@
     @endif
 
 
-    @if ($errors->any())
+    @php($erroresGenerales = collect($errors->getMessages())->except(['dpi', 'nit', 'tipo_documento', 'telefono'])->flatten()->all())
+    @if (count($erroresGenerales))
 
         <div
             class="alert alert-danger alert-dismissible fade show"
@@ -57,7 +58,7 @@
 
             <ul class="mb-0 mt-2">
 
-                @foreach ($errors->all() as $error)
+                @foreach ($erroresGenerales as $error)
 
                     <li>
                         {{ $error }}
@@ -118,6 +119,8 @@
     <form
         action="{{ route('alta-servicio.store') }}"
         method="POST"
+        data-validacion-campos data-contexto-cliente="alta"
+        data-consulta-documento-url="{{ route('clientes.consultar-documento') }}"
         enctype="multipart/form-data"
         id="formAltaServicio"
     >
@@ -268,8 +271,8 @@
                                 >
                                     {{ $cliente->nombre }}
 
-                                    @if ($cliente->dpi)
-                                        — DPI: {{ $cliente->dpi }}
+                                    @if ($cliente->dpi || $cliente->nit)
+                                        — {{ $cliente->dpi ? 'DPI' : 'NIT' }}: {{ $cliente->dpi ?? $cliente->nit }}
                                     @endif
                                 </option>
 
@@ -302,7 +305,7 @@
                             <small class="form-text text-muted">
 
                                 Antes de crear una persona nueva,
-                                verifique que no exista por nombre o DPI.
+                                verifique que no exista por nombre, DPI o NIT.
 
                             </small>
 
@@ -326,7 +329,7 @@
 
                         <i class="fas fa-info-circle me-1"></i>
 
-                        El DPI no puede estar registrado previamente.
+                        El DPI o NIT no puede estar registrado previamente.
                         Si ya existe, utilice la opción
                         <strong>Cliente existente</strong>.
 
@@ -376,32 +379,7 @@
 
                             <div class="form-group">
 
-                                <label for="dpi">
-                                    DPI
-                                    <span class="text-danger">*</span>
-                                </label>
-
-                                <input
-                                    type="text"
-                                    name="dpi"
-                                    id="dpi"
-                                    value="{{ old('dpi') }}"
-                                    maxlength="20"
-                                    class="form-control
-                                        @error('dpi')
-                                            is-invalid
-                                        @enderror"
-                                    placeholder="Número de DPI"
-                                    autocomplete="off"
-                                >
-
-                                @error('dpi')
-
-                                    <div class="invalid-feedback">
-                                        {{ $message }}
-                                    </div>
-
-                                @enderror
+                                @include('partials.documento-cliente', ['clienteDocumento' => null])
 
                             </div>
 
@@ -423,7 +401,9 @@
 
                                 <input
                                     type="text"
-                                    name="telefono"
+                                    name="telefono" data-validacion="telefono" data-validacion-max="25"
+                                    aria-describedby="telefono-error telefono-feedback"
+                                    aria-invalid="{{ $errors->has('telefono') ? 'true' : 'false' }}"
                                     id="telefono"
                                     value="{{ old('telefono') }}"
                                     maxlength="25"
@@ -434,13 +414,7 @@
                                     placeholder="Ej. 5555-5555"
                                 >
 
-                                @error('telefono')
-
-                                    <div class="invalid-feedback">
-                                        {{ $message }}
-                                    </div>
-
-                                @enderror
+                                @include('partials.validacion-campo', ['campo' => 'telefono'])
 
                             </div>
 
@@ -995,8 +969,11 @@
             const nombre =
                 document.getElementById('nombre');
 
-            const dpi =
-                document.getElementById('dpi');
+            const documento =
+                document.getElementById('documento');
+
+            const tipoDocumento =
+                document.getElementById('tipo_documento');
 
             const telefono =
                 document.getElementById('telefono');
@@ -1029,8 +1006,9 @@
                     nombre.disabled = true;
                     nombre.required = false;
 
-                    dpi.disabled = true;
-                    dpi.required = false;
+                    documento.disabled = true;
+                    tipoDocumento.disabled = true;
+                    documento.required = false;
 
                     telefono.disabled = true;
                     direccionPrincipal.disabled = true;
@@ -1048,8 +1026,9 @@
                 nombre.disabled = false;
                 nombre.required = true;
 
-                dpi.disabled = false;
-                dpi.required = true;
+                documento.disabled = false;
+                tipoDocumento.disabled = false;
+                documento.required = true;
 
                 telefono.disabled = false;
                 direccionPrincipal.disabled = false;

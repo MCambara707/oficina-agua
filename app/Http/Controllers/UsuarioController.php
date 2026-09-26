@@ -63,6 +63,25 @@ class UsuarioController extends Controller
     }
 
     /**
+     * Usa la misma validación de formato de Laravel que crear y editar.
+     * La unicidad se comprueba al guardar, con el usuario editado excluido.
+     */
+    public function validarCorreo(Request $request)
+    {
+        $request->validate(
+            ['email' => ['required', 'email', 'max:150']],
+            [
+                'email.required' => 'El correo electrónico es obligatorio.',
+                'email.email' => 'Ingrese un correo electrónico válido.',
+                'email.max' => 'El correo electrónico no puede exceder los 150 caracteres.',
+            ]
+        );
+
+        return response()->json(['valido' => true])
+            ->header('Cache-Control', 'private, no-store');
+    }
+
+    /**
      * Registrar un usuario nuevo.
      */
     public function store(Request $request)

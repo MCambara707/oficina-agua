@@ -21,7 +21,7 @@
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                 <form method="GET" class="d-flex flex-column flex-sm-row gap-2 col-12 col-lg-7">
                     <input type="text" name="q" value="{{ $busqueda }}"
-                           class="form-control" placeholder="Buscar por nombre o teléfono">
+                           class="form-control" placeholder="Nombre, teléfono, DPI o NIT">
                     <button type="submit" class="btn btn-secondary text-nowrap">Buscar</button>
                 </form>
 
@@ -36,7 +36,7 @@
                 <thead>
                     <tr>
                         <th>Nombre</th>
-                        <th>DPI</th>
+                        <th>DPI / NIT</th>
                         <th>Teléfono</th>
                         <th>Dirección</th>
                         <th>Estado</th>
@@ -47,7 +47,7 @@
                     @forelse ($clientes as $cliente)
                         <tr>
                             <td>{{ $cliente->nombre }}</td>
-                            <td>{{ $cliente->dpi }}</td>
+                            <td>{{ $cliente->dpi ?? $cliente->nit }}</td>
                             <td>{{ $cliente->telefono ?? '—' }}</td>
                             <td>{{ $cliente->direccion_principal ?? '—' }}</td>
                             <td>

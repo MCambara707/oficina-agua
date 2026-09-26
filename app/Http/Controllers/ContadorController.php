@@ -24,7 +24,7 @@ class ContadorController extends Controller
      * - punto de referencia;
      * - sector;
      * - nombre del cliente;
-     * - DPI del cliente.
+     * - DPI o NIT del cliente.
      */
     public function index(Request $request)
     {
@@ -80,6 +80,11 @@ class ContadorController extends Controller
                                         )
                                         ->orWhere(
                                             'dpi',
+                                            'like',
+                                            '%' . $busqueda . '%'
+                                        )
+                                        ->orWhere(
+                                            'nit',
                                             'like',
                                             '%' . $busqueda . '%'
                                         );

@@ -11,17 +11,20 @@
     <div class="card">
         <div class="card-body">
 
-            @if ($errors->any())
+            @php($erroresGenerales = collect($errors->getMessages())->except(['dpi', 'nit', 'tipo_documento', 'telefono'])->flatten()->all())
+            @if (count($erroresGenerales))
                 <div class="alert alert-danger">
                     <ul class="mb-0">
-                        @foreach ($errors->all() as $error)
+                        @foreach ($erroresGenerales as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
                 </div>
             @endif
 
-            <form action="{{ route('clientes.update', $cliente) }}" method="POST">
+            <form action="{{ route('clientes.update', $cliente) }}" method="POST"
+                  data-validacion-campos data-contexto-cliente="editar"
+                  data-consulta-documento-url="{{ route('clientes.consultar-documento') }}">
                 @csrf
                 @method('PUT')
 
@@ -32,15 +35,15 @@
                 </div>
 
                 <div class="form-group">
-                    <label for="dpi">DPI *</label>
-                    <input type="text" name="dpi" id="dpi"
-                           class="form-control" value="{{ old('dpi', $cliente->dpi) }}" required maxlength="20">
+                    @include('partials.documento-cliente', ['clienteDocumento' => $cliente])
                 </div>
 
                 <div class="form-group">
                     <label for="telefono">Teléfono</label>
-                    <input type="text" name="telefono" id="telefono"
-                           class="form-control" value="{{ old('telefono', $cliente->telefono) }}">
+                    <input type="text" name="telefono" data-validacion="telefono" data-validacion-max="25"
+                           aria-describedby="telefono-error telefono-feedback" aria-invalid="{{ $errors->has('telefono') ? 'true' : 'false' }}" maxlength="25" id="telefono"
+                           class="form-control @error('telefono') is-invalid @enderror" value="{{ old('telefono', $cliente->telefono) }}">
+                    @include('partials.validacion-campo', ['campo' => 'telefono'])
                 </div>
 
                 <div class="form-group">

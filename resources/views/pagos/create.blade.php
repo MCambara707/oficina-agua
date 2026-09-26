@@ -116,11 +116,11 @@
 
 
                         <dt class="col-sm-4">
-                            DPI
+                            {{ $cliente?->dpi ? 'DPI' : 'NIT' }}
                         </dt>
 
                         <dd class="col-sm-8">
-                            {{ $cliente?->dpi ?? 'No registrado' }}
+                            {{ $cliente?->dpi ?? $cliente?->nit ?? 'No registrado' }}
                         </dd>
 
 

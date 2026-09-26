@@ -163,8 +163,8 @@
                                     >
                                         {{ $cliente->nombre }}
 
-                                        @if ($cliente->dpi)
-                                            — DPI: {{ $cliente->dpi }}
+                                        @if ($cliente->dpi ?? $cliente->nit)
+                                            — {{ $cliente->dpi ? 'DPI' : 'NIT' }}: {{ $cliente->dpi ?? $cliente->nit }}
                                         @endif
                                     </option>
 

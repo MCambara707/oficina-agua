@@ -80,6 +80,7 @@ abstract class FlujoTestCase extends TestCase
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 nombre VARCHAR(150),
                 dpi VARCHAR(20) UNIQUE,
+                nit VARCHAR(20) UNIQUE,
                 telefono VARCHAR(25),
                 direccion_principal VARCHAR(255),
                 activo BOOLEAN NOT NULL DEFAULT 1,

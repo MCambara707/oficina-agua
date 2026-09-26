@@ -28,7 +28,7 @@
             <form action="{{ route('recibos.index') }}" method="GET" class="mb-4">
                 <div class="row align-items-end g-3">
                     <div class="col-12 col-xl-5">
-                        <label for="q">Recibo, DPI, nombre o contador</label>
+                        <label for="q">Recibo, DPI, NIT, nombre o contador</label>
                         <input id="q" name="q" class="form-control" maxlength="150"
                                value="{{ $busqueda }}" placeholder="Buscar en todos los recibos">
                     </div>
@@ -57,7 +57,7 @@
                 <table class="table table-bordered table-hover">
                     <thead>
                         <tr>
-                            <th>Recibo</th><th>Cliente / DPI</th><th>Contador</th><th>Período</th>
+                            <th>Recibo</th><th>Cliente / Documento</th><th>Contador</th><th>Período</th>
                             <th>Emisión</th><th>Estado</th><th>Monto original</th><th>Mora actual</th>
                             <th>Saldo pendiente</th><th>Total pagado</th><th>Acciones</th>
                         </tr>
@@ -75,7 +75,7 @@
                             @endphp
                             <tr>
                                 <td>{{ $recibo->numero_recibo }}</td>
-                                <td>{{ $contador->cliente->nombre }}<br><small>{{ $contador->cliente->dpi }}</small></td>
+                                <td>{{ $contador->cliente->nombre }}<br><small>{{ $contador->cliente->dpi ?? $contador->cliente->nit }}</small></td>
                                 <td>{{ $contador->numero_registro }}</td>
                                 <td>{{ $recibo->lectura->periodo->format('m/Y') }}</td>
                                 <td>{{ $recibo->fecha_emision->format('d/m/Y') }}</td>

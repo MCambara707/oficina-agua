@@ -66,7 +66,7 @@ class DashboardEstadoCuentaController extends Controller
          * La búsqueda permite encontrar clientes por:
          *
          * - nombre;
-         * - DPI;
+         * - DPI o NIT;
          * - número de contador.
          *
          * Además cargamos sus contadores y servicios para poder
@@ -93,10 +93,16 @@ class DashboardEstadoCuentaController extends Controller
                             );
 
                             /*
-                             * Buscar por DPI.
+                             * Buscar por DPI o NIT.
                              */
                             $q->orWhere(
                                 'dpi',
+                                'like',
+                                '%' . $busqueda . '%'
+                            );
+
+                            $q->orWhere(
+                                'nit',
                                 'like',
                                 '%' . $busqueda . '%'
                             );
